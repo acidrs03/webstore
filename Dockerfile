@@ -16,9 +16,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 
 # Copy application source and entrypoint
-COPY src ./src
-COPY package.json ./
-COPY entrypoint.sh ./entrypoint.sh
+COPY src /app/src
+COPY package.json /app/package.json
+COPY entrypoint.sh /app/entrypoint.sh
 
 # Pre-create all required directories and set up non-root user.
 # All upload subdirectories are created here so volume mounts from the host
