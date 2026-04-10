@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('../../partials/head') %></head>
+<body>
+<%- include('../../partials/nav') %>
+<%- include('../../partials/flash') %>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="h2 mb-4"><%= content.title || 'Return Policy' %></h1>
+      <% if (content.body) { %>
+        <div class="page-content"><%- content.body %></div>
+      <% } else { %>
+        <div class="page-content">
+          <h5>Personalized & Custom Orders</h5>
+          <p>Because personalized and custom items are made specifically for you, we are unable to accept returns or exchanges on these items unless they arrive damaged or defective.</p>
+          <h5>Non-Personalized Items</h5>
+          <p>Non-personalized items may be returned within 14 days of delivery in original, unused condition. Please <a href="/contact">contact us</a> first to initiate a return.</p>
+          <h5>Damaged or Defective Items</h5>
+          <p>If your item arrives damaged, please contact us within 7 days with photos of the damage and we will make it right.</p>
+          <h5>Questions?</h5>
+          <p>Reach out through our <a href="/contact">contact page</a> and we'll be happy to help.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>
+</body>
+</html>

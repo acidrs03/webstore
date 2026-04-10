@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('../partials/head') %></head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+
+<div class="container py-5 text-center">
+  <div class="mx-auto" style="max-width:480px">
+    <div class="display-1 mb-3">↩</div>
+    <h1 class="h2 mb-3">Checkout Cancelled</h1>
+    <p class="text-muted mb-4">No worries — your cart has been saved and nothing was charged.</p>
+    <div class="d-flex gap-3 justify-content-center">
+      <a href="/cart" class="btn btn-primary-custom">Return to Cart</a>
+      <a href="/shop" class="btn btn-outline-secondary">Keep Shopping</a>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

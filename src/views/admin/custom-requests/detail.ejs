@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('../../partials/admin/head') %></head>
+<body>
+<div class="admin-wrapper">
+  <%- include('../../partials/admin/sidebar') %>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h4 class="mb-0">Request from <%= request.name %></h4>
+      <a href="/admin/custom-requests" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back
+      </a>
+    </div>
+    <div class="admin-content">
+      <%- include('../../partials/flash') %>
+
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <!-- Request Details -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+              <h6 class="mb-0 fw-semibold">Request Details</h6>
+            </div>
+            <div class="card-body">
+              <dl class="row mb-0">
+                <dt class="col-sm-3 text-muted small">Name</dt>
+                <dd class="col-sm-9"><%= request.name %></dd>
+                <dt class="col-sm-3 text-muted small">Email</dt>
+                <dd class="col-sm-9"><a href="mailto:<%= request.email %>"><%= request.email %></a></dd>
+                <% if (request.phone) { %>
+                <dt class="col-sm-3 text-muted small">Phone</dt>
+                <dd class="col-sm-9"><%= request.phone %></dd>
+                <% } %>
+                <% if (request.productInterest) { %>
+                <dt class="col-sm-3 text-muted small">Interest</dt>
+                <dd class="col-sm-9"><%= request.productInterest %></dd>
+                <% } %>
+                <dt class="col-sm-3 text-muted small">Submitted</dt>
+                <dd class="col-sm-9"><%= request.createdAt.toLocaleString() %></dd>
+              </dl>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+              <h6 class="mb-0 fw-semibold">Customer's Request</h6>
+            </div>
+            <div class="card-body">
+              <p class="mb-0" style="white-space:pre-wrap"><%= request.details %></p>
+            </div>
+          </div>
+
+          <% if (request.referenceImage) { %>
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+              <h6 class="mb-0 fw-semibold">Reference Image</h6>
+            </div>
+            <div class="card-body">
+              <img src="<%= request.referenceImage %>" alt="Reference" class="img-fluid rounded" style="max-height:400px;">
+            </div>
+          </div>
+          <% } %>
+        </div>
+
+        <div class="col-lg-4">
+          <!-- Status Update -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+              <h6 class="mb-0 fw-semibold">Update Status</h6>
+            </div>
+            <div class="card-body">
+              <form action="/admin/custom-requests/<%= request._id %>" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <div class="mb-3">
+                  <label class="form-label">Status</label>
+                  <select name="status" class="form-select">
+                    <% ['new','reviewing','quoted','accepted','declined','completed'].forEach(function(s) { %>
+                      <option value="<%= s %>" <%= request.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
+                    <% }); %>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Admin Notes</label>
+                  <textarea class="form-control" name="adminNotes" rows="5" placeholder="Internal notes, quoted price, etc."><%= request.adminNotes || '' %></textarea>
+                </div>
+                <button type="submit" class="btn btn-dark w-100">Save</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

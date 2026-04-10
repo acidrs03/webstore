@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('../../partials/admin/head') %></head>
+<body>
+<div class="admin-wrapper">
+  <%- include('../../partials/admin/sidebar') %>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h4 class="mb-0">Custom Requests</h4>
+    </div>
+    <div class="admin-content">
+      <%- include('../../partials/flash') %>
+
+      <!-- Filters -->
+      <form method="GET" class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+              <select name="status" class="form-select form-select-sm">
+                <option value="">All Statuses</option>
+                <% ['new','reviewing','quoted','accepted','declined','completed'].forEach(function(s) { %>
+                  <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Filter</button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 admin-table">
+            <thead class="table-light">
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Interest</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% const statusColors = { new: 'bg-danger', reviewing: 'bg-warning text-dark', quoted: 'bg-info text-dark', accepted: 'bg-success', declined: 'bg-secondary', completed: 'bg-dark' }; %>
+              <% if (requests && requests.length > 0) { %>
+                <% requests.forEach(function(req) { %>
+                <tr>
+                  <td class="fw-semibold"><%= req.name %></td>
+                  <td><a href="mailto:<%= req.email %>"><%= req.email %></a></td>
+                  <td class="text-muted small"><%= req.productInterest || '—' %></td>
+                  <td><span class="badge <%= statusColors[req.status] || 'bg-secondary' %>"><%= req.status %></span></td>
+                  <td class="text-muted small"><%= req.createdAt.toLocaleDateString() %></td>
+                  <td><a href="/admin/custom-requests/<%= req._id %>" class="btn btn-xs btn-outline-secondary">View</a></td>
+                </tr>
+                <% }); %>
+              <% } else { %>
+                <tr><td colspan="6" class="text-center text-muted py-5">No custom requests yet.</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

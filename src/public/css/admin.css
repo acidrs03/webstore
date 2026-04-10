@@ -1,0 +1,160 @@
+/* ============================================
+   Crafted by Savage Co. — Admin Panel CSS
+   ============================================ */
+
+:root {
+  --admin-sidebar-width: 240px;
+  --admin-sidebar-bg: #1a1a2e;
+  --admin-sidebar-text: rgba(255,255,255,0.75);
+  --admin-sidebar-active: #fff;
+  --admin-sidebar-hover: rgba(255,255,255,0.12);
+  --admin-accent: #8B4513;
+  --admin-topbar-h: 64px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  background: #f4f5f7;
+  color: #1a1a2e;
+}
+
+/* Wrapper */
+.admin-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.admin-sidebar {
+  width: var(--admin-sidebar-width);
+  min-height: 100vh;
+  background: var(--admin-sidebar-bg);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-brand .brand-text {
+  color: #fff;
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.sidebar-nav { padding-top: 8px; }
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 9px 12px;
+  color: var(--admin-sidebar-text);
+  text-decoration: none;
+  border-radius: 6px;
+  margin-bottom: 2px;
+  font-size: 0.875rem;
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-link:hover {
+  background: var(--admin-sidebar-hover);
+  color: var(--admin-sidebar-active);
+}
+.sidebar-link.active {
+  background: rgba(139,69,19,0.2);
+  color: #fff;
+  font-weight: 600;
+}
+.sidebar-link i { font-size: 0.95rem; opacity: 0.8; }
+
+.sidebar-divider { border-top: 1px solid rgba(255,255,255,0.08); }
+.sidebar-footer { border-color: rgba(255,255,255,0.08) !important; }
+
+/* Main content area */
+.admin-main {
+  flex: 1;
+  margin-left: var(--admin-sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top bar */
+.admin-topbar {
+  height: var(--admin-topbar-h);
+  background: #fff;
+  border-bottom: 1px solid #e8e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.admin-topbar h4 { font-size: 1.05rem; font-weight: 600; }
+
+/* Content area */
+.admin-content {
+  flex: 1;
+  padding: 24px;
+  max-width: 1400px;
+  width: 100%;
+}
+
+/* Cards */
+.card { border-radius: 8px; }
+.card-header { border-bottom: 1px solid #f0f0f5; }
+
+/* Stat cards */
+.stat-card { border-radius: 8px; }
+.stat-card .stat-label { letter-spacing: 0.05em; font-size: 0.7rem; }
+.stat-card .stat-value { font-size: 1.8rem; }
+.stat-card .stat-icon { font-size: 1.5rem; opacity: 0.3; }
+.stat-blue { border-top: 3px solid #4a90d9; }
+.stat-green { border-top: 3px solid #3d7a5a; }
+.stat-yellow { border-top: 3px solid #d4a017; }
+.stat-red { border-top: 3px solid #c0392b; }
+
+/* Tables */
+.admin-table { font-size: 0.875rem; }
+.admin-table th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #666;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.admin-table td { vertical-align: middle; }
+
+/* Tiny button */
+.btn-xs {
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  border-radius: 4px;
+  line-height: 1.5;
+}
+
+/* Forms */
+.form-label { font-weight: 500; font-size: 0.875rem; margin-bottom: 4px; }
+.form-text { font-size: 0.78rem; }
+
+/* Alerts inside admin */
+.alert { border-radius: 6px; font-size: 0.875rem; }
+
+/* Responsive */
+@media (max-width: 991px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+  }
+  .admin-sidebar.open { transform: translateX(0); }
+  .admin-main { margin-left: 0; }
+}

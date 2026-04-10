@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('../partials/head') %>
+<%
+  // JSON-LD: Product structured data for Google rich results
+  const _baseUrl  = typeof baseUrl !== 'undefined' ? baseUrl : '';
+  const _price    = (product.price / 100).toFixed(2);
+  const _cmpPrice = product.compareAtPrice > 0 ? (product.compareAtPrice / 100).toFixed(2) : null;
+  const _inStock  = !product.trackInventory || product.madeToOrder || product.inventoryQuantity > 0;
+  const _images   = (product.images || []).map(img => img.startsWith('http') ? img : `${_baseUrl}${img}`);
+  const _ld = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.title,
+    "description": product.shortDescription || '',
+    "sku": product.sku || undefined,
+    "image": _images.length ? _images : undefined,
+    "url": `${_baseUrl}/shop/${product.slug}`,
+    "brand": { "@type": "Brand", "name": _siteName },
+    "offers": {
+      "@type": "Offer",
+      "url": `${_baseUrl}/shop/${product.slug}`,
+      "priceCurrency": "USD",
+      "price": _price,
+      "priceValidUntil": new Date(Date.now() + 365 * 86400000).toISOString().split('T')[0],
+      "availability": _inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      "seller": { "@type": "Organization", "name": _siteName }
+    }
+  };
+  if (!_ld.sku) delete _ld.sku;
+  if (!_ld.image) delete _ld.image;
+  if (_cmpPrice) _ld.offers.priceSpecification = { "@type": "UnitPriceSpecification", "price": _cmpPrice, "priceCurrency": "USD" };
+%>
+<script type="application/ld+json"><%- JSON.stringify(_ld) %></script>
+</head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+
+<div class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
+      <% if (product.categoryId && product.categoryId.name) { %>
+        <li class="breadcrumb-item"><a href="/shop?category=<%= product.categoryId.slug %>"><%= product.categoryId.name %></a></li>
+      <% } %>
+      <li class="breadcrumb-item active"><%= product.title %></li>
+    </ol>
+  </nav>
+
+  <div class="row g-5">
+    <!-- Images -->
+    <div class="col-md-6">
+      <% if (product.images && product.images.length > 0) { %>
+        <div class="product-detail-img-wrapper mb-3">
+          <img id="product-main-image" src="<%= product.images[0] %>" alt="<%= product.title %>" class="img-fluid rounded shadow-sm w-100" style="object-fit:cover;aspect-ratio:1/1;">
+        </div>
+        <% if (product.images.length > 1) { %>
+        <div class="d-flex gap-2 flex-wrap">
+          <% product.images.forEach(function(img, i) { %>
+            <img src="<%= img %>" alt="<%= product.title %> thumbnail <%= i+1 %>"
+                 class="product-thumb rounded border <%= i === 0 ? 'active' : '' %>"
+                 data-src="<%= img %>"
+                 style="width:70px;height:70px;object-fit:cover;cursor:pointer;">
+          <% }); %>
+        </div>
+        <% } %>
+      <% } else { %>
+        <div class="product-detail-img-wrapper bg-light rounded d-flex align-items-center justify-content-center" style="aspect-ratio:1/1;">
+          <span class="text-muted">No image available</span>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Product Info -->
+    <div class="col-md-6">
+      <% if (product.categoryId && product.categoryId.name) { %>
+        <a href="/shop?category=<%= product.categoryId.slug %>" class="badge bg-secondary-warm text-decoration-none mb-2"><%= product.categoryId.name %></a>
+      <% } %>
+
+      <h1 class="product-title h2 mb-2"><%= product.title %></h1>
+
+      <div class="product-price mb-3">
+        <% if (product.compareAtPrice && product.compareAtPrice > product.price) { %>
+          <span class="h4 text-danger fw-bold">$<%= (product.price / 100).toFixed(2) %></span>
+          <span class="text-muted text-decoration-line-through ms-2">$<%= (product.compareAtPrice / 100).toFixed(2) %></span>
+          <span class="badge bg-danger ms-2">Sale</span>
+        <% } else { %>
+          <span class="h4 fw-bold">$<%= (product.price / 100).toFixed(2) %></span>
+        <% } %>
+      </div>
+
+      <% if (product.shortDescription) { %>
+        <p class="text-muted mb-3"><%= product.shortDescription %></p>
+      <% } %>
+
+      <!-- Badges -->
+      <div class="mb-3 d-flex flex-wrap gap-2">
+        <% if (product.madeToOrder) { %>
+          <span class="badge bg-info-warm">Made to Order</span>
+        <% } %>
+        <% if (product.leadTimeDays && product.leadTimeDays > 0) { %>
+          <span class="badge bg-light text-dark border">
+            ⏱ Ships in <%= product.leadTimeDays %> days
+          </span>
+        <% } %>
+        <% if (product.trackInventory && product.inventoryQuantity <= 5 && product.inventoryQuantity > 0) { %>
+          <span class="badge bg-warning text-dark">Only <%= product.inventoryQuantity %> left</span>
+        <% } %>
+        <% if (product.trackInventory && product.inventoryQuantity === 0 && !product.madeToOrder) { %>
+          <span class="badge bg-secondary">Out of Stock</span>
+        <% } %>
+      </div>
+
+      <!-- Add to Cart Form -->
+      <% const outOfStock = product.trackInventory && product.inventoryQuantity === 0 && !product.madeToOrder; %>
+      <% if (!outOfStock) { %>
+      <form action="/cart/add" method="POST" class="add-to-cart-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="productId" value="<%= product._id %>">
+
+        <% if (product.allowsCustomization) { %>
+        <div class="mb-3">
+          <label for="customizationText" class="form-label fw-semibold">
+            <%= product.customizationLabel || 'Personalization' %>
+            <span class="text-danger">*</span>
+          </label>
+          <textarea class="form-control" id="customizationText" name="customizationText"
+                    rows="2" maxlength="200"
+                    placeholder="<%= product.customizationHelpText || 'Enter your personalization text here' %>"></textarea>
+          <% if (product.customizationHelpText) { %>
+            <div class="form-text"><%= product.customizationHelpText %></div>
+          <% } %>
+        </div>
+        <% } else { %>
+          <input type="hidden" name="customizationText" value="">
+        <% } %>
+
+        <div class="mb-3 d-flex align-items-center gap-3">
+          <div style="width:90px">
+            <input type="number" class="form-control text-center" name="quantity" value="1" min="1" max="99">
+          </div>
+          <button type="submit" class="btn btn-primary-custom btn-lg flex-grow-1">Add to Cart</button>
+        </div>
+      </form>
+      <% } else { %>
+        <div class="alert alert-secondary">This item is currently out of stock.</div>
+      <% } %>
+
+      <hr>
+      <a href="/custom-request" class="text-muted small">
+        ✦ Need something custom? Request a custom order &rarr;
+      </a>
+
+      <!-- Tags -->
+      <% if (product.tags && product.tags.length > 0) { %>
+      <div class="mt-3">
+        <% product.tags.forEach(function(tag) { %>
+          <a href="/shop?q=<%= encodeURIComponent(tag) %>" class="badge bg-light text-dark text-decoration-none me-1"><%= tag %></a>
+        <% }); %>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Full Description -->
+  <% if (product.description) { %>
+  <div class="row mt-5">
+    <div class="col-lg-8">
+      <h3 class="h5 mb-3 fw-semibold">Product Details</h3>
+      <div class="product-description"><%- product.description %></div>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- Related Products -->
+  <% if (relatedProducts && relatedProducts.length > 0) { %>
+  <div class="mt-5">
+    <h3 class="h4 mb-4">You Might Also Like</h3>
+    <div class="row g-4">
+      <% relatedProducts.forEach(function(p) { %>
+      <div class="col-6 col-md-3">
+        <div class="product-card card h-100 border-0 shadow-sm">
+          <a href="/shop/<%= p.slug %>" class="product-card-img-link">
+            <div class="product-img-wrapper">
+              <% if (p.images && p.images[0]) { %>
+                <img src="<%= p.images[0] %>" alt="<%= p.title %>" class="product-img card-img-top">
+              <% } else { %>
+                <div class="product-img-placeholder bg-light d-flex align-items-center justify-content-center">
+                  <span class="text-muted small">No Image</span>
+                </div>
+              <% } %>
+            </div>
+          </a>
+          <div class="card-body">
+            <h6 class="card-title small"><a href="/shop/<%= p.slug %>" class="text-dark text-decoration-none"><%= p.title %></a></h6>
+            <span class="fw-semibold small">$<%= (p.price / 100).toFixed(2) %></span>
+          </div>
+        </div>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

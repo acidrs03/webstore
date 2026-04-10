@@ -1,0 +1,71 @@
+# ── Handcraft Store — Docker Compose ─────────────────────────────────────────
+# No build step — pulls the pre-built image from Docker Hub.
+#
+# SETUP (two steps):
+#   1. Copy .env.example to .env and fill in your values.
+#   2. docker compose up -d
+#
+# The container automatically seeds the database and creates the admin account
+# on first start. Everything is ready once the health check passes (~60s).
+#
+# SSL:  Use Nginx Proxy Manager or Traefik to terminate HTTPS, forwarding to
+#       port 8080 on this host. Set BASE_URL to your https:// domain first.
+#
+# MongoDB network: If your MongoDB container is on a named Docker network,
+#   uncomment the external network block at the bottom and add it to the
+#   app service's networks list.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Node.js application ────────────────────────────────────────────────────
+  # On first start the container will:
+  #   • Seed default categories, products, and settings
+  #   • Create the admin account (from ADMIN_EMAIL / ADMIN_PASSWORD in .env)
+  #   • Generate sitemap.xml and robots.txt
+  #   • Start the web server
+  # All steps are idempotent — safe to restart at any time.
+  app:
+    image: ${DOCKER_IMAGE:-handcraft-store:latest}
+    container_name: store_app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+    volumes:
+      - ${APPDATA_PATH:-/mnt/user/appdata/handcraft-store}/uploads:/app/uploads
+      - ${APPDATA_PATH:-/mnt/user/appdata/handcraft-store}/logs:/app/logs
+    networks:
+      - store_net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ── Nginx reverse proxy ────────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: store_nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-8080}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${APPDATA_PATH:-/mnt/user/appdata/handcraft-store}/uploads:/app/uploads:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - store_net
+
+networks:
+  store_net:
+    driver: bridge
+  # ── External MongoDB network (uncomment if needed) ─────────────────────────
+  # If your MongoDB container is on a named network (find with: docker network ls),
+  # uncomment the lines below and add the network name to the app service above.
+  #
+  # your_mongo_network:
+  #   external: true

@@ -1,0 +1,16 @@
+# Environment — NEVER commit secrets
+.env
+
+# Runtime directories (created by first-run.sh)
+uploads/
+logs/
+backups/
+
+# Node modules (not needed — app runs inside Docker)
+node_modules/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo

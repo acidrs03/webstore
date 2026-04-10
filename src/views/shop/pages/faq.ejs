@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('../../partials/head') %></head>
+<body>
+<%- include('../../partials/nav') %>
+<%- include('../../partials/flash') %>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="h2 mb-4"><%= content.title || 'Frequently Asked Questions' %></h1>
+
+      <% if (content.body) { %>
+        <div class="page-content"><%- content.body %></div>
+      <% } else { %>
+      <div class="accordion" id="faqAccordion">
+        <div class="accordion-item border-0 mb-2 shadow-sm rounded">
+          <h2 class="accordion-header">
+            <button class="accordion-button rounded" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+              How long does shipping take?
+            </button>
+          </h2>
+          <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+            <div class="accordion-body text-muted">
+              Standard orders typically ship within 3–5 business days. Made-to-order and personalized items may require additional production time. You'll receive a tracking number once your order ships.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item border-0 mb-2 shadow-sm rounded">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+              Do you accept custom orders?
+            </button>
+          </h2>
+          <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body text-muted">
+              Absolutely! Custom orders are our specialty. Use our <a href="/custom-request">Custom Order Request</a> form to tell us what you have in mind, and we'll get back to you with pricing and details.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item border-0 mb-2 shadow-sm rounded">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+              Can I personalize any item?
+            </button>
+          </h2>
+          <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body text-muted">
+              Many of our products support personalization with names, dates, or custom text. Items that allow customization will have a personalization field on their product page.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item border-0 mb-2 shadow-sm rounded">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+              What is your return policy?
+            </button>
+          </h2>
+          <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body text-muted">
+              Because many of our items are personalized, we cannot accept returns on custom orders. Non-personalized items can be returned within 14 days. See our full <a href="/pages/returns">Return Policy</a> for details.
+            </div>
+          </div>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>
+</body>
+</html>

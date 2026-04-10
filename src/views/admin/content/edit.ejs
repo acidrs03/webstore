@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/admin/head') %>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+  <style>
+    .ql-container { font-size: 0.95rem; }
+    .ql-editor { min-height: 280px; max-height: 600px; overflow-y: auto; }
+    .ql-toolbar.ql-snow { border-radius: 0.375rem 0.375rem 0 0; border-color: #dee2e6; background: #f8f9fa; }
+    .ql-container.ql-snow { border-radius: 0 0 0.375rem 0.375rem; border-color: #dee2e6; }
+  </style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <%- include('../../partials/admin/sidebar') %>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h4 class="mb-0">Edit: <%= meta.label %></h4>
+      <a href="/admin/content" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back
+      </a>
+    </div>
+    <div class="admin-content">
+      <%- include('../../partials/flash') %>
+
+      <form action="/admin/content/<%= meta.key %>" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body">
+
+                <div class="mb-3">
+                  <label for="title" class="form-label">Page Title</label>
+                  <input type="text" class="form-control" id="title" name="title" value="<%= content.title || meta.label %>" maxlength="200">
+                </div>
+
+                <% if (meta.key === 'hero') { %>
+                  <hr>
+                  <h6 class="text-muted small text-uppercase mb-3">Hero Section Settings</h6>
+                  <div class="mb-3">
+                    <label class="form-label">Headline</label>
+                    <input type="text" class="form-control" name="heroTitle" value="<%= content.data && content.data.heroTitle ? content.data.heroTitle : (content.data && content.data.title ? content.data.title : 'Handcrafted with Heart') %>">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Subtitle</label>
+                    <input type="text" class="form-control" name="subtitle" value="<%= content.data && content.data.subtitle ? content.data.subtitle : '' %>">
+                  </div>
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Button Text</label>
+                      <input type="text" class="form-control" name="ctaText" value="<%= content.data && content.data.ctaText ? content.data.ctaText : 'Shop Now' %>">
+                    </div>
+                    <div class="col-md-8">
+                      <label class="form-label">Button URL</label>
+                      <input type="text" class="form-control" name="ctaUrl" value="<%= content.data && content.data.ctaUrl ? content.data.ctaUrl : '/shop' %>">
+                    </div>
+                  </div>
+
+                  <hr>
+                  <h6 class="text-muted small text-uppercase mb-3">Hero Background Image</h6>
+                  <% if (content.data && content.data.heroImage) { %>
+                  <div class="mb-3">
+                    <label class="form-label small">Current Image</label>
+                    <div class="d-flex align-items-start gap-3">
+                      <img src="<%= content.data.heroImage %>" alt="Hero image"
+                        style="height:100px;width:180px;object-fit:cover;border-radius:6px;border:1px solid #dee2e6;">
+                      <div>
+                        <div class="form-check mt-1">
+                          <input class="form-check-input" type="checkbox" name="removeHeroImage" value="1" id="removeHeroImage">
+                          <label class="form-check-label text-danger small" for="removeHeroImage">Remove image (revert to gradient)</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <% } %>
+                  <div class="mb-3">
+                    <label for="heroImage" class="form-label">
+                      <%= (content.data && content.data.heroImage) ? 'Replace Image' : 'Upload Image' %>
+                    </label>
+                    <input type="file" class="form-control" id="heroImage" name="heroImage"
+                      accept="image/jpeg,image/png,image/webp">
+                    <div class="form-text">Recommended: 1600×700px or wider. JPEG, PNG, or WebP. The image will appear full-width with the headline, subtitle, and button below it.</div>
+                  </div>
+
+                <% } else if (meta.key === 'announcement') { %>
+                  <hr>
+                  <h6 class="text-muted small text-uppercase mb-3">Announcement Bar</h6>
+                  <div class="mb-3">
+                    <label class="form-label">Announcement Text</label>
+                    <input type="text" class="form-control" name="text" value="<%= content.data && content.data.text ? content.data.text : '' %>" maxlength="300" placeholder="e.g., Free shipping on orders over $50!">
+                  </div>
+                  <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="isActive" value="on" <%= content.data && content.data.isActive ? 'checked' : '' %>>
+                    <label class="form-check-label">Show announcement bar</label>
+                  </div>
+                <% } %>
+
+                <div class="mb-4">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="form-label mb-0">Page Content</label>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleSource">
+                      <i class="bi bi-code-slash me-1"></i> Source
+                    </button>
+                  </div>
+                  <!-- WYSIWYG editor mount point -->
+                  <div id="quillEditor"></div>
+                  <!-- Raw HTML source view (hidden by default) -->
+                  <textarea id="sourceEditor" class="form-control font-monospace small d-none" rows="14" spellcheck="false"></textarea>
+                  <!-- Always-synced textarea that carries the value in the form submission -->
+                  <textarea id="body" name="body" style="display:none"></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-dark px-4">Save Content</button>
+                  <a href="/admin/content" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script>
+(function () {
+  const initialHtml = <%- JSON.stringify(content.body || '') %>;
+  let sourceMode = false;
+
+  const quill = new Quill('#quillEditor', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        [{ header: [2, 3, 4, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['blockquote', 'link'],
+        [{ align: [] }],
+        ['clean'],
+      ],
+    },
+  });
+
+  const bodyEl = document.getElementById('body');
+
+  function syncToField() {
+    bodyEl.value = quill.root.innerHTML;
+  }
+
+  // Load existing content and seed the field
+  if (initialHtml) {
+    quill.clipboard.dangerouslyPasteHTML(initialHtml);
+  }
+  syncToField();
+
+  // Keep the field in sync on every keystroke/format change
+  quill.on('text-change', syncToField);
+
+  // Source toggle
+  const toggleBtn = document.getElementById('toggleSource');
+  const sourceEl  = document.getElementById('sourceEditor');
+  const editorEl  = document.getElementById('quillEditor');
+
+  toggleBtn.addEventListener('click', function () {
+    sourceMode = !sourceMode;
+    if (sourceMode) {
+      sourceEl.value = quill.root.innerHTML;
+      editorEl.classList.add('d-none');
+      sourceEl.classList.remove('d-none');
+      toggleBtn.innerHTML = '<i class="bi bi-eye me-1"></i> Visual';
+    } else {
+      quill.clipboard.dangerouslyPasteHTML(sourceEl.value);
+      sourceEl.classList.add('d-none');
+      editorEl.classList.remove('d-none');
+      toggleBtn.innerHTML = '<i class="bi bi-code-slash me-1"></i> Source';
+      syncToField();
+    }
+  });
+
+  // Final sync on submit to catch source-mode edits
+  document.querySelector('form').addEventListener('submit', function () {
+    bodyEl.value = sourceMode ? sourceEl.value : quill.root.innerHTML;
+  });
+})();
+</script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('../../partials/admin/head') %></head>
+<body>
+<div class="admin-wrapper">
+  <%- include('../../partials/admin/sidebar') %>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h4 class="mb-0">Categories</h4>
+      <a href="/admin/categories/new" class="btn btn-sm btn-dark">
+        <i class="bi bi-plus-lg me-1"></i> Add Category
+      </a>
+    </div>
+    <div class="admin-content">
+      <%- include('../../partials/flash') %>
+      <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 admin-table">
+            <thead class="table-light">
+              <tr>
+                <th style="width:60px">Image</th>
+                <th>Name</th>
+                <th>Slug</th>
+                <th>Products</th>
+                <th>Sort</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (categories && categories.length > 0) { %>
+                <% categories.forEach(function(cat) { %>
+                <tr>
+                  <td>
+                    <% if (cat.image) { %>
+                      <img src="<%= cat.image %>" alt="" class="rounded" style="width:48px;height:48px;object-fit:cover;">
+                    <% } else { %>
+                      <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                        <i class="bi bi-image text-muted"></i>
+                      </div>
+                    <% } %>
+                  </td>
+                  <td class="fw-semibold"><%= cat.name %></td>
+                  <td><code class="small"><%= cat.slug %></code></td>
+                  <td><%= cat.productCount || 0 %></td>
+                  <td><%= cat.sortOrder %></td>
+                  <td><span class="badge <%= cat.isActive ? 'bg-success' : 'bg-secondary' %>"><%= cat.isActive ? 'Active' : 'Inactive' %></span></td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      <a href="/admin/categories/<%= cat._id %>/edit" class="btn btn-xs btn-outline-secondary" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <form action="/admin/categories/<%= cat._id %>/delete" method="POST" class="d-inline">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn-xs btn-outline-danger" title="Delete"
+                                data-confirm="Delete category '<%= cat.name %>'?<%= cat.productCount > 0 ? ' This has ' + cat.productCount + ' products assigned.' : '' %>">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <% }); %>
+              <% } else { %>
+                <tr><td colspan="7" class="text-center text-muted py-5">No categories yet. <a href="/admin/categories/new">Add the first one</a>.</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

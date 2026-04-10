@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('../../partials/admin/head') %></head>
+<body>
+<div class="admin-wrapper">
+  <%- include('../../partials/admin/sidebar') %>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h4 class="mb-0">Site Settings</h4>
+    </div>
+    <div class="admin-content">
+      <%- include('../../partials/flash') %>
+
+      <form action="/admin/settings" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <% const groups = {}; %>
+        <% settings.forEach(function(s) { (groups[s.group] = groups[s.group] || []).push(s); }); %>
+        <% const groupLabels = { general: 'General', contact: 'Contact Information', social: 'Social Media', shipping: 'Shipping', announcement: 'Announcement' }; %>
+
+        <% Object.keys(groups).forEach(function(group) { %>
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-semibold"><%= groupLabels[group] || group.charAt(0).toUpperCase() + group.slice(1) %></h6>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <% groups[group].forEach(function(setting) { %>
+              <div class="col-md-6">
+                <label for="setting_<%= setting.key %>" class="form-label"><%= setting.label || setting.key %></label>
+                <% if (setting.inputType === 'textarea') { %>
+                  <textarea class="form-control" id="setting_<%= setting.key %>" name="<%= setting.key %>" rows="3"><%= setting.value || '' %></textarea>
+                <% } else if (setting.inputType === 'checkbox') { %>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="setting_<%= setting.key %>" name="<%= setting.key %>" value="true" <%= setting.value === 'true' ? 'checked' : '' %>>
+                  </div>
+                <% } else { %>
+                  <input type="<%= setting.inputType || 'text' %>" class="form-control" id="setting_<%= setting.key %>" name="<%= setting.key %>" value="<%= setting.value || '' %>">
+                <% } %>
+              </div>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+        <% }); %>
+
+        <!-- Maintenance Mode — always shown, separate from the key/value settings loop -->
+        <div class="card border-0 shadow-sm mb-4 border-warning-subtle">
+          <div class="card-header bg-white py-3 d-flex align-items-center gap-2">
+            <h6 class="mb-0 fw-semibold">Maintenance Mode</h6>
+            <% if (settingsMap.maintenanceEnabled === 'true') { %>
+              <span class="badge bg-warning text-dark ms-1">Active</span>
+            <% } %>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="setting_maintenanceEnabled"
+                    name="maintenanceEnabled" value="true"
+                    <%= settingsMap.maintenanceEnabled === 'true' ? 'checked' : '' %>>
+                  <label class="form-check-label fw-medium" for="setting_maintenanceEnabled">
+                    Enable Maintenance Mode
+                  </label>
+                </div>
+                <div class="form-text">When active, all storefront pages show the maintenance page. Admins who are logged in can still browse normally.</div>
+              </div>
+              <div class="col-md-6">
+                <label for="setting_maintenanceHeading" class="form-label">Page Heading</label>
+                <input type="text" class="form-control" id="setting_maintenanceHeading"
+                  name="maintenanceHeading"
+                  value="<%= settingsMap.maintenanceHeading || 'Under Maintenance' %>"
+                  placeholder="e.g. Coming Soon, Under Construction">
+                <div class="form-text">Shown as the large title on the maintenance page.</div>
+              </div>
+              <div class="col-md-6">
+                <label for="setting_maintenanceMessage" class="form-label">Message</label>
+                <input type="text" class="form-control" id="setting_maintenanceMessage"
+                  name="maintenanceMessage"
+                  value="<%= settingsMap.maintenanceMessage || 'We\'ll be back soon.' %>"
+                  placeholder="e.g. We're working on something great. Check back soon!">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <% if (settings.length === 0) { %>
+        <div class="alert alert-info">
+          No settings found. Run <code>npm run seed:data</code> to initialize default settings.
+        </div>
+        <% } else { %>
+        <button type="submit" class="btn btn-dark px-4">Save Settings</button>
+        <% } %>
+      </form>
+    </div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

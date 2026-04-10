@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../../partials/admin/head') %>
+  <style>
+    .theme-card {
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+    }
+    .theme-card * { pointer-events: none; }
+    .theme-card:hover { border-color: #6b7280; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .theme-card.selected { border-color: #111827; box-shadow: 0 0 0 3px rgba(17,24,39,0.12); }
+    .theme-card .check-badge {
+      position: absolute; top: 10px; right: 10px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #111827; color: #fff;
+      display: none; align-items: center; justify-content: center;
+      font-size: 12px;
+    }
+    .theme-card.selected .check-badge { display: flex; }
+    .theme-swatch { height: 64px; border-radius: 6px 6px 0 0; display: flex; overflow: hidden; }
+    .theme-swatch-bar { flex: 1; }
+    .custom-color-row { display: flex; align-items: center; gap: 10px; }
+    .custom-color-row input[type=color] {
+      width: 44px; height: 36px; padding: 2px;
+      border-radius: 4px; border: 1px solid #dee2e6; cursor: pointer;
+      pointer-events: auto;
+    }
+    .custom-color-row input[type=text] { pointer-events: auto; }
+  </style>
+</head>
+<body>
+<div class="admin-wrapper">
+  <%- include('../../partials/admin/sidebar') %>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h4 class="mb-0">Theme</h4>
+    </div>
+    <div class="admin-content">
+      <%- include('../../partials/flash') %>
+
+      <form action="/admin/theme" method="POST" id="themeForm">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="themeId" id="themeIdInput" value="<%= activeThemeId %>">
+
+        <!-- Preset grid -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-semibold">Choose a Theme</h6>
+          </div>
+          <div class="card-body">
+            <div class="row g-3" id="themeGrid">
+              <% presets.forEach(function(preset) { %>
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="theme-card p-0 <%= activeThemeId === preset.id ? 'selected' : '' %>"
+                  data-theme-id="<%= preset.id %>">
+                  <div class="check-badge"><i class="bi bi-check"></i></div>
+                  <% if (preset.preview) { %>
+                  <div class="theme-swatch">
+                    <div class="theme-swatch-bar" style="background:<%= preset.preview.primary %>"></div>
+                    <div class="theme-swatch-bar" style="background:<%= preset.preview.accent %>"></div>
+                    <div class="theme-swatch-bar" style="background:<%= preset.preview.bg %>"></div>
+                    <div class="theme-swatch-bar" style="background:<%= preset.preview.text %>"></div>
+                  </div>
+                  <% } else { %>
+                  <div class="theme-swatch" style="background: linear-gradient(135deg, #6366f1, #ec4899, #f59e0b, #10b981)"></div>
+                  <% } %>
+                  <div class="p-2 pb-3">
+                    <div class="fw-semibold small"><%= preset.name %></div>
+                    <div class="text-muted" style="font-size:0.75rem"><%= preset.description %></div>
+                  </div>
+                </div>
+              </div>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom theme colors -->
+        <div class="card border-0 shadow-sm mb-4" id="customPanel" style="<%= activeThemeId === 'custom' ? '' : 'display:none' %>">
+          <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-semibold">Custom Colors</h6>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <% customVarKeys.forEach(function(v) { %>
+              <div class="col-md-6">
+                <label class="form-label small fw-medium mb-1">
+                  <%= v.label %><span class="text-muted fw-normal ms-1">— <%= v.hint %></span>
+                </label>
+                <div class="custom-color-row">
+                  <input type="color" name="<%= v.key %>" id="color_<%= v.key %>"
+                    value="<%= customVars[v.key] || '#888888' %>">
+                  <input type="text" class="form-control form-control-sm font-monospace"
+                    id="hex_<%= v.key %>"
+                    value="<%= customVars[v.key] || '#888888' %>"
+                    maxlength="7" style="max-width:100px;">
+                </div>
+              </div>
+              <% }); %>
+            </div>
+            <div class="alert alert-info small mt-3 mb-0 py-2">
+              <i class="bi bi-info-circle me-1"></i>
+              <strong>Tip:</strong> Primary (Dark) is used for hover states — set it a shade darker than Primary. Accent (Light) should be a very light tint of your Accent color.
+            </div>
+          </div>
+        </div>
+
+        <!-- Live preview -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">Preview</h6>
+            <span class="badge bg-secondary-subtle text-secondary small">Approximate — save to see full effect</span>
+          </div>
+          <div class="card-body p-0 overflow-hidden" style="border-radius:0 0 8px 8px;">
+            <div id="previewStrip" style="padding:24px 32px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <span id="prev-brand" style="font-size:1.1rem;font-weight:700;"><%= siteName %></span>
+                <span style="flex:1"></span>
+                <span id="prev-link" style="font-size:0.85rem;font-weight:500;">Shop</span>
+                <span id="prev-btn" style="padding:6px 16px;border-radius:4px;font-size:0.85rem;font-weight:500;color:#fff;">Shop Now</span>
+              </div>
+              <div id="prev-hero" style="padding:28px 20px;border-radius:8px;text-align:center;margin-bottom:16px;">
+                <div style="font-size:1.5rem;font-weight:700;margin-bottom:6px;">Handcrafted with Heart</div>
+                <div id="prev-subtitle" style="font-size:0.9rem;">Custom laser engraved and personalized items made just for you.</div>
+              </div>
+              <div style="display:flex;gap:10px;">
+                <div id="prev-card" style="flex:1;padding:14px;border-radius:8px;border:1px solid;font-size:0.85rem;">
+                  <div style="height:56px;border-radius:4px;margin-bottom:8px;" id="prev-card-img"></div>
+                  <div style="font-weight:600;margin-bottom:2px;">Sample Product</div>
+                  <div id="prev-price" style="font-size:0.8rem;">$49.99</div>
+                </div>
+                <div id="prev-card2" style="flex:1;padding:14px;border-radius:8px;border:1px solid;font-size:0.85rem;">
+                  <div style="height:56px;border-radius:4px;margin-bottom:8px;" id="prev-card-img2"></div>
+                  <div style="font-weight:600;margin-bottom:2px;">Another Product</div>
+                  <div id="prev-price2" style="font-size:0.8rem;">$29.99</div>
+                </div>
+                <div id="prev-footer-sample" style="flex:1;padding:14px;border-radius:8px;font-size:0.85rem;color:rgba(255,255,255,0.85);">
+                  <div style="font-weight:700;margin-bottom:4px;">Footer</div>
+                  <div style="font-size:0.75rem;opacity:0.65;">© <%= siteName %></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-dark px-5">Save Theme</button>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function () {
+  // Preset data — only vars and id needed client-side
+  var PRESETS = <%- JSON.stringify(presets.map(function(p){ return { id: p.id, vars: p.vars }; })) %>;
+
+  // ── Card selection ──────────────────────────────────────────────────────────
+  document.getElementById('themeGrid').addEventListener('click', function (e) {
+    var card = e.target.closest('.theme-card');
+    if (!card) return;
+    var id = card.getAttribute('data-theme-id');
+    selectTheme(id);
+  });
+
+  function selectTheme(id) {
+    document.querySelectorAll('.theme-card').forEach(function (c) {
+      c.classList.remove('selected');
+    });
+    var target = document.querySelector('[data-theme-id="' + id + '"]');
+    if (target) target.classList.add('selected');
+    document.getElementById('themeIdInput').value = id;
+
+    if (id === 'custom') {
+      document.getElementById('customPanel').style.display = '';
+      updatePreviewFromCustom();
+    } else {
+      document.getElementById('customPanel').style.display = 'none';
+      var preset = PRESETS.find(function (p) { return p.id === id; });
+      if (preset && preset.vars) updatePreview(preset.vars);
+    }
+  }
+
+  // ── Custom color sync ───────────────────────────────────────────────────────
+  document.querySelectorAll('.custom-color-row input[type=color]').forEach(function (picker) {
+    var hexId = 'hex_' + picker.name;
+    picker.addEventListener('input', function () {
+      document.getElementById(hexId).value = picker.value;
+      updatePreviewFromCustom();
+    });
+  });
+
+  document.querySelectorAll('.custom-color-row input[type=text]').forEach(function (hexInput) {
+    var colorId = 'color_' + hexInput.id.replace('hex_', '');
+    hexInput.addEventListener('input', function () {
+      if (/^#[0-9a-fA-F]{6}$/.test(hexInput.value)) {
+        document.getElementById(colorId).value = hexInput.value;
+        updatePreviewFromCustom();
+      }
+    });
+  });
+
+  function updatePreviewFromCustom() {
+    var vars = {};
+    document.querySelectorAll('.custom-color-row input[type=color]').forEach(function (input) {
+      vars[input.name] = input.value;
+    });
+    updatePreview(vars);
+  }
+
+  // ── Preview renderer ────────────────────────────────────────────────────────
+  function updatePreview(vars) {
+    var p  = vars.themePrimary     || '#8B4513';
+    var a  = vars.themeAccent      || '#D4A574';
+    var al = vars.themeAccentLight || '#F5E6D3';
+    var bg = vars.themeBg          || '#FDFAF6';
+    var bw = vars.themeBgWarm      || '#FEF6EE';
+    var tx = vars.themeText        || '#2C1810';
+    var tm = vars.themeTextMuted   || '#6B5A4E';
+    var bo = vars.themeBorder      || '#E8DDD4';
+    var fb = vars.themeFooterBg    || '#1a1207';
+    var h1 = vars.themeHeroBgFrom  || bw;
+    var h2 = vars.themeHeroBgMid   || al;
+    var h3 = vars.themeHeroBgTo    || a;
+
+    var strip = document.getElementById('previewStrip');
+    strip.style.background = bg;
+    strip.style.color = tx;
+
+    document.getElementById('prev-brand').style.color = tx;
+    document.getElementById('prev-link').style.color = p;
+    document.getElementById('prev-btn').style.background = p;
+
+    var hero = document.getElementById('prev-hero');
+    hero.style.background = 'linear-gradient(135deg,' + h1 + ',' + h2 + ',' + h3 + ')';
+    hero.style.color = tx;
+    document.getElementById('prev-subtitle').style.color = tm;
+
+    ['prev-card', 'prev-card2'].forEach(function (id) {
+      var el = document.getElementById(id);
+      el.style.background = bg;
+      el.style.borderColor = bo;
+      el.style.color = tx;
+    });
+    document.getElementById('prev-card-img').style.background = al;
+    document.getElementById('prev-card-img2').style.background = al;
+    ['prev-price', 'prev-price2'].forEach(function (id) {
+      document.getElementById(id).style.color = tm;
+    });
+
+    document.getElementById('prev-footer-sample').style.background = fb;
+  }
+
+  // ── Init on page load ───────────────────────────────────────────────────────
+  var activeId = document.getElementById('themeIdInput').value;
+  var activePreset = PRESETS.find(function (p) { return p.id === activeId; });
+  if (activePreset && activePreset.vars) {
+    updatePreview(activePreset.vars);
+  } else if (activeId === 'custom') {
+    updatePreviewFromCustom();
+  }
+
+})();
+</script>
+</body>
+</html>

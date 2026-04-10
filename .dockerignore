@@ -1,0 +1,27 @@
+# Never bake secrets into the image
+.env
+.env.*
+!.env.example
+
+# Not needed inside the image
+node_modules
+npm-debug.log*
+
+# Runtime data — mounted as volumes at runtime
+uploads/
+logs/
+backups/
+
+# Deployment config — not part of the app
+docker-compose.yml
+nginx/
+scripts/
+README.md
+.github/
+
+# Git and editor noise
+.git
+.gitignore
+.gitattributes
+.DS_Store
+Thumbs.db

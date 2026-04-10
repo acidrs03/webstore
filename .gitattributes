@@ -1,0 +1,13 @@
+# Normalize line endings to LF in the repo (consistent cross-platform)
+* text=auto eol=lf
+
+# Shell scripts must stay LF so they run correctly on Linux/Unraid
+*.sh text eol=lf
+
+# Binary files — no line ending conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary

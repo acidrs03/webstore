@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('../partials/head') %></head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+
+<div class="container py-5">
+  <div class="row g-5 justify-content-center">
+    <div class="col-lg-7">
+      <h1 class="h2 mb-1">Get in Touch</h1>
+      <p class="text-muted mb-4">Have a question or want to learn more? We'd love to hear from you.</p>
+
+      <form action="/contact" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="mb-3">
+          <label for="name" class="form-label">Your Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="name" name="name" required maxlength="100">
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+          <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="mb-3">
+          <label for="subject" class="form-label">Subject</label>
+          <input type="text" class="form-control" id="subject" name="subject" maxlength="200">
+        </div>
+        <div class="mb-3">
+          <label for="message" class="form-label">Message <span class="text-danger">*</span></label>
+          <textarea class="form-control" id="message" name="message" rows="5" required maxlength="2000" placeholder="How can we help you?"></textarea>
+          <div class="form-text">Please be as detailed as possible. We typically respond within 1–2 business days.</div>
+        </div>
+        <button type="submit" class="btn btn-primary-custom btn-lg px-4">Send Message</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<% if (typeof success !== 'undefined' && success && success.length) { %>
+  <% success.forEach(function(msg) { %>
+    <div class="alert alert-success alert-dismissible fade show mb-0 rounded-0" role="alert">
+      <div class="container"><%= msg %></div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% }); %>
+<% } %>
+<% if (typeof error !== 'undefined' && error && error.length) { %>
+  <% error.forEach(function(msg) { %>
+    <div class="alert alert-danger alert-dismissible fade show mb-0 rounded-0" role="alert">
+      <div class="container"><%= msg %></div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% }); %>
+<% } %>
+<% if (typeof info !== 'undefined' && info && info.length) { %>
+  <% info.forEach(function(msg) { %>
+    <div class="alert alert-info alert-dismissible fade show mb-0 rounded-0" role="alert">
+      <div class="container"><%= msg %></div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% }); %>
+<% } %>

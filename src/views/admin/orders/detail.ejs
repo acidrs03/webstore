@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('../../partials/admin/head') %></head>
+<body>
+<div class="admin-wrapper">
+  <%- include('../../partials/admin/sidebar') %>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h4 class="mb-0">Order <%= order.orderNumber %></h4>
+      <a href="/admin/orders" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Orders
+      </a>
+    </div>
+    <div class="admin-content">
+      <%- include('../../partials/flash') %>
+
+      <div class="row g-4">
+        <!-- Left: Order details -->
+        <div class="col-lg-8">
+
+          <!-- Items -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+              <h6 class="mb-0 fw-semibold">Order Items</h6>
+            </div>
+            <div class="table-responsive">
+              <table class="table mb-0 admin-table">
+                <thead class="table-light">
+                  <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+                </thead>
+                <tbody>
+                  <% order.items.forEach(function(item) { %>
+                  <tr>
+                    <td>
+                      <div class="fw-semibold small"><%= item.title %></div>
+                      <% if (item.customizationText) { %>
+                        <div class="text-muted small">Personalization: <em><%= item.customizationText %></em></div>
+                      <% } %>
+                      <% if (item.sku) { %><div class="text-muted small">SKU: <%= item.sku %></div><% } %>
+                    </td>
+                    <td><%= item.quantity %></td>
+                    <td>$<%= (item.price / 100).toFixed(2) %></td>
+                    <td>$<%= ((item.price * item.quantity) / 100).toFixed(2) %></td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+                <tfoot>
+                  <tr><td colspan="3" class="text-end text-muted">Subtotal</td><td>$<%= (order.subtotal / 100).toFixed(2) %></td></tr>
+                  <tr><td colspan="3" class="text-end text-muted">Shipping</td><td>$<%= (order.shippingAmount / 100).toFixed(2) %></td></tr>
+                  <tr><td colspan="3" class="text-end text-muted">Tax</td><td>$<%= (order.taxAmount / 100).toFixed(2) %></td></tr>
+                  <tr class="table-light"><td colspan="3" class="text-end fw-bold">Total</td><td class="fw-bold">$<%= (order.total / 100).toFixed(2) %></td></tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <!-- Fulfillment Update -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+              <h6 class="mb-0 fw-semibold">Update Fulfillment</h6>
+            </div>
+            <div class="card-body">
+              <form action="/admin/orders/<%= order._id %>/fulfillment" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <div class="row g-3">
+                  <div class="col-md-5">
+                    <label class="form-label">Fulfillment Status</label>
+                    <select name="fulfillmentStatus" class="form-select">
+                      <% ['unfulfilled','processing','shipped','delivered','cancelled'].forEach(function(s) { %>
+                        <option value="<%= s %>" <%= order.fulfillmentStatus === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
+                      <% }); %>
+                    </select>
+                  </div>
+                  <div class="col-md-5">
+                    <label class="form-label">Tracking Number</label>
+                    <input type="text" name="trackingNumber" class="form-control" value="<%= order.trackingNumber || '' %>" placeholder="Optional">
+                  </div>
+                  <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-dark w-100">Update</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Admin Notes -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+              <h6 class="mb-0 fw-semibold">Admin Notes</h6>
+            </div>
+            <div class="card-body">
+              <form action="/admin/orders/<%= order._id %>/notes" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <textarea name="adminNotes" class="form-control mb-3" rows="3" placeholder="Internal notes (not visible to customer)"><%= order.adminNotes || '' %></textarea>
+                <button type="submit" class="btn btn-sm btn-dark">Save Notes</button>
+              </form>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Customer & metadata -->
+        <div class="col-lg-4">
+
+          <!-- Status -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <div class="mb-2">
+                <label class="form-label small text-muted text-uppercase">Payment</label>
+                <div><span class="badge fs-6 <%= order.paymentStatus === 'paid' ? 'bg-success' : 'bg-warning text-dark' %>"><%= order.paymentStatus %></span></div>
+              </div>
+              <div>
+                <label class="form-label small text-muted text-uppercase">Fulfillment</label>
+                <div><span class="badge fs-6 bg-secondary"><%= order.fulfillmentStatus %></span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+              <h6 class="mb-0 fw-semibold">Customer</h6>
+            </div>
+            <div class="card-body small">
+              <div class="fw-semibold"><%= order.customer.name || '—' %></div>
+              <div><a href="mailto:<%= order.customer.email %>"><%= order.customer.email %></a></div>
+              <% if (order.customer.phone) { %><div><%= order.customer.phone %></div><% } %>
+            </div>
+          </div>
+
+          <!-- Shipping Address -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+              <h6 class="mb-0 fw-semibold">Ship To</h6>
+            </div>
+            <div class="card-body small">
+              <% if (order.shippingAddress && order.shippingAddress.line1) { %>
+                <div><%= order.shippingAddress.line1 %></div>
+                <% if (order.shippingAddress.line2) { %><div><%= order.shippingAddress.line2 %></div><% } %>
+                <div><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.zip %></div>
+                <div><%= order.shippingAddress.country || 'US' %></div>
+              <% } else { %>
+                <span class="text-muted">No address on file</span>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Stripe Info -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+              <h6 class="mb-0 fw-semibold">Payment Details</h6>
+            </div>
+            <div class="card-body small text-muted">
+              <div>Order placed: <%= order.createdAt.toLocaleString() %></div>
+              <% if (order.stripeCheckoutSessionId) { %>
+                <div class="mt-1">Stripe session: <code class="small"><%= order.stripeCheckoutSessionId.substring(0, 20) %>…</code></div>
+              <% } %>
+              <% if (order.trackingNumber) { %>
+                <div class="mt-1 fw-semibold text-dark">Tracking: <%= order.trackingNumber %></div>
+              <% } %>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

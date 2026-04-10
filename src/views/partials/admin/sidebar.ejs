@@ -1,0 +1,69 @@
+<nav class="admin-sidebar d-flex flex-column" id="adminSidebar">
+  <div class="sidebar-brand px-3 py-4">
+    <div class="brand-text">
+      <div class="fw-bold"><%= typeof siteName !== 'undefined' ? siteName : 'My Store' %></div>
+      <small class="text-white-50">Admin Panel</small>
+    </div>
+  </div>
+
+  <ul class="sidebar-nav list-unstyled flex-grow-1 px-2 mb-0">
+    <li>
+      <a href="/admin" class="sidebar-link <%= currentPath === '/admin' ? 'active' : '' %>">
+        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+      </a>
+    </li>
+    <li>
+      <a href="/admin/products" class="sidebar-link <%= currentPath.startsWith('/admin/products') ? 'active' : '' %>">
+        <i class="bi bi-box-seam me-2"></i> Products
+      </a>
+    </li>
+    <li>
+      <a href="/admin/categories" class="sidebar-link <%= currentPath.startsWith('/admin/categories') ? 'active' : '' %>">
+        <i class="bi bi-tags me-2"></i> Categories
+      </a>
+    </li>
+    <li>
+      <a href="/admin/orders" class="sidebar-link <%= currentPath.startsWith('/admin/orders') ? 'active' : '' %>">
+        <i class="bi bi-bag-check me-2"></i> Orders
+      </a>
+    </li>
+    <li>
+      <a href="/admin/custom-requests" class="sidebar-link <%= currentPath.startsWith('/admin/custom-requests') ? 'active' : '' %>">
+        <i class="bi bi-pencil-square me-2"></i> Custom Requests
+      </a>
+    </li>
+    <li class="sidebar-divider my-2"></li>
+    <li>
+      <a href="/admin/content" class="sidebar-link <%= currentPath.startsWith('/admin/content') ? 'active' : '' %>">
+        <i class="bi bi-file-text me-2"></i> Content Pages
+      </a>
+    </li>
+    <li>
+      <a href="/admin/shipping" class="sidebar-link <%= currentPath.startsWith('/admin/shipping') ? 'active' : '' %>">
+        <i class="bi bi-truck me-2"></i> Shipping
+      </a>
+    </li>
+    <li>
+      <a href="/admin/theme" class="sidebar-link <%= currentPath.startsWith('/admin/theme') ? 'active' : '' %>">
+        <i class="bi bi-palette me-2"></i> Theme
+      </a>
+    </li>
+    <li>
+      <a href="/admin/settings" class="sidebar-link <%= currentPath.startsWith('/admin/settings') ? 'active' : '' %>">
+        <i class="bi bi-gear me-2"></i> Site Settings
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-footer px-2 py-3 border-top border-secondary">
+    <a href="/" target="_blank" class="sidebar-link text-white-50 small mb-2 d-block">
+      <i class="bi bi-box-arrow-up-right me-1"></i> View Store
+    </a>
+    <form action="/admin/logout" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="btn btn-sm btn-outline-light w-100">
+        <i class="bi bi-box-arrow-left me-1"></i> Log Out
+      </button>
+    </form>
+  </div>
+</nav>

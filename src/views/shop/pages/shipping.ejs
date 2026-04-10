@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('../../partials/head') %></head>
+<body>
+<%- include('../../partials/nav') %>
+<%- include('../../partials/flash') %>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="h2 mb-4"><%= content.title || 'Shipping Policy' %></h1>
+      <% if (content.body) { %>
+        <div class="page-content"><%- content.body %></div>
+      <% } else { %>
+        <div class="page-content">
+          <h5>Processing Time</h5>
+          <p>Most in-stock orders are processed and shipped within 3–5 business days. Made-to-order and personalized items may take 5–10 business days before shipping.</p>
+          <h5>Shipping Methods</h5>
+          <p>We ship via USPS and UPS. Shipping costs are calculated at checkout based on your location and order weight.</p>
+          <h5>Tracking</h5>
+          <p>Once your order ships, you'll receive an email with a tracking number. Please allow 24 hours for tracking to update.</p>
+          <h5>Questions?</h5>
+          <p>Contact us at <a href="/contact">our contact page</a> with any questions about your shipment.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>
+</body>
+</html>
