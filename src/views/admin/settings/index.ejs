@@ -15,7 +15,8 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
         <% const groups = {}; %>
-        <% settings.forEach(function(s) { (groups[s.group] = groups[s.group] || []).push(s); }); %>
+        <% const maintenanceKeys = ['maintenanceEnabled', 'maintenanceHeading', 'maintenanceMessage']; %>
+        <% settings.forEach(function(s) { if (!maintenanceKeys.includes(s.key)) { (groups[s.group] = groups[s.group] || []).push(s); } }); %>
         <% const groupLabels = { general: 'General', contact: 'Contact Information', social: 'Social Media', shipping: 'Shipping', announcement: 'Announcement' }; %>
 
         <% Object.keys(groups).forEach(function(group) { %>
