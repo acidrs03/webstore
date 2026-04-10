@@ -59,7 +59,7 @@ Copy `.env.example` to `.env` and set these values. Required variables are marke
 | **`ADMIN_EMAIL`** | Yes | — | Email address for the admin login account (created on first start). |
 | **`ADMIN_PASSWORD`** | Yes | — | Password for the admin account. Use a strong password. |
 | `SITE_NAME` | No | `My Store` | Your store's display name — shown in the browser tab, admin panel, and emails. |
-| `DOCKER_IMAGE` | No | `handcraft-store:latest` | Docker Hub image to pull. Set to `yourdockerhubuser/handcraft-store:latest`. |
+| `DOCKER_IMAGE` | No | `webstore:latest` | Docker Hub image to pull. Set to `yourdockerhubuser/webstore:latest`. |
 
 ### Ports
 
@@ -72,7 +72,7 @@ Copy `.env.example` to `.env` and set these values. Required variables are marke
 
 | Variable | Required | Default | What it does |
 |---|---|---|---|
-| `APPDATA_PATH` | No | `/mnt/user/appdata/handcraft-store` | Base directory on your **host** where uploads and logs are stored. See [path setup](#path-setup) below. |
+| `APPDATA_PATH` | No | `/mnt/user/appdata/webstore` | Base directory on your **host** where uploads and logs are stored. See [path setup](#path-setup) below. |
 | `UPLOAD_DIR` | No | `./uploads` | Upload directory inside the container. **Do not change this.** |
 | `MAX_FILE_SIZE` | No | `10485760` | Maximum upload size in bytes. Default is 10 MB. |
 
@@ -114,9 +114,9 @@ The database (`my_store` in the examples above) is created automatically on firs
 
 | Setup | Value to use |
 |---|---|
-| Unraid (appdata share) | `APPDATA_PATH=/mnt/user/appdata/handcraft-store` |
-| Linux / VPS | `APPDATA_PATH=/opt/handcraft-store` |
-| Local testing | `APPDATA_PATH=/tmp/handcraft-store` |
+| Unraid (appdata share) | `APPDATA_PATH=/mnt/user/appdata/webstore` |
+| Linux / VPS | `APPDATA_PATH=/opt/webstore` |
+| Local testing | `APPDATA_PATH=/tmp/webstore` |
 
 The full volume mappings are:
 
@@ -132,16 +132,16 @@ The full volume mappings are:
 ### Method A — Docker Compose Manager (recommended)
 
 1. Install the **Docker Compose Manager** community app from the Unraid App Store.
-2. Copy the contents of this folder to `/mnt/user/appdata/handcraft-store/` on your Unraid server (via WinSCP, Unraid's file manager, or `rsync`).
-3. In Compose Manager, point it at `/mnt/user/appdata/handcraft-store/docker-compose.yml`.
-4. Create your `.env` file at `/mnt/user/appdata/handcraft-store/.env` and fill in the values.
+2. Copy the contents of this folder to `/mnt/user/appdata/webstore/` on your Unraid server (via WinSCP, Unraid's file manager, or `rsync`).
+3. In Compose Manager, point it at `/mnt/user/appdata/webstore/docker-compose.yml`.
+4. Create your `.env` file at `/mnt/user/appdata/webstore/.env` and fill in the values.
 5. Click **Up** in Compose Manager.
 
 ### Method B — Unraid Docker GUI (manual container setup)
 
 If you add the container through Unraid's Docker tab directly, configure it as follows:
 
-**Repository:** `yourdockerhubuser/handcraft-store:latest`
+**Repository:** `yourdockerhubuser/webstore:latest`
 
 **Environment variables** — add each as a Variable:
 
@@ -170,8 +170,8 @@ If you add the container through Unraid's Docker tab directly, configure it as f
 
 | Container path | Host path | Access mode |
 |---|---|---|
-| `/app/uploads` | `/mnt/user/appdata/handcraft-store/uploads` | Read/Write |
-| `/app/logs` | `/mnt/user/appdata/handcraft-store/logs` | Read/Write |
+| `/app/uploads` | `/mnt/user/appdata/webstore/uploads` | Read/Write |
+| `/app/logs` | `/mnt/user/appdata/webstore/logs` | Read/Write |
 
 ---
 
@@ -294,7 +294,7 @@ crontab -e
 Add (runs at 2:00 AM daily):
 
 ```
-0 2 * * * MONGO_CONTAINER=my_mongo DB_NAME=my_store /bin/bash /mnt/user/appdata/handcraft-store/scripts/backup.sh >> /mnt/user/appdata/handcraft-store/logs/backup.log 2>&1
+0 2 * * * MONGO_CONTAINER=my_mongo DB_NAME=my_store /bin/bash /mnt/user/appdata/webstore/scripts/backup.sh >> /mnt/user/appdata/webstore/logs/backup.log 2>&1
 ```
 
 ---
