@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 5001;
 async function startServer() {
   try {
     await connectDatabase();
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       logger.info(`${process.env.SITE_NAME || 'Handcraft Store'} running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
     });
   } catch (err) {
