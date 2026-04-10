@@ -26,15 +26,15 @@ services:
   #   • Start the web server
   # All steps are idempotent — safe to restart at any time.
   app:
-    image: ${DOCKER_IMAGE:-handcraft-store:latest}
+    image: ${DOCKER_IMAGE:-webstore:latest}
     container_name: store_app
     restart: unless-stopped
     env_file: .env
     environment:
       NODE_ENV: production
     volumes:
-      - ${APPDATA_PATH:-/mnt/user/appdata/handcraft-store}/uploads:/app/uploads
-      - ${APPDATA_PATH:-/mnt/user/appdata/handcraft-store}/logs:/app/logs
+      - ${APPDATA_PATH:-/mnt/user/appdata/webstore}/uploads:/app/uploads
+      - ${APPDATA_PATH:-/mnt/user/appdata/webstore}/logs:/app/logs
     networks:
       - store_net
     healthcheck:
@@ -53,7 +53,7 @@ services:
       - "${NGINX_PORT:-8080}:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ${APPDATA_PATH:-/mnt/user/appdata/handcraft-store}/uploads:/app/uploads:ro
+      - ${APPDATA_PATH:-/mnt/user/appdata/webstore}/uploads:/app/uploads:ro
     depends_on:
       app:
         condition: service_healthy
