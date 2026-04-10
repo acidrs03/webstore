@@ -37,8 +37,8 @@ docker compose up -d
 docker compose ps  # store_app should show "Up (healthy)" after ~60s
 ```
 
-Then open `http://<your-server-ip>:8080` in a browser.
-Admin panel: `http://<your-server-ip>:8080/admin`
+Then open `http://<your-server-ip>:3000` in a browser (or your `APP_PORT` if changed).
+Admin panel: `http://<your-server-ip>:3000/admin`
 
 ---
 
@@ -55,7 +55,7 @@ Copy `.env.example` to `.env` and set these values. Required variables are marke
 | **`STRIPE_SECRET_KEY`** | Yes | — | Stripe secret key — `sk_live_...` for production, `sk_test_...` for testing. |
 | **`STRIPE_PUBLISHABLE_KEY`** | Yes | — | Stripe publishable key — `pk_live_...` or `pk_test_...`. |
 | **`STRIPE_WEBHOOK_SECRET`** | Yes | — | Signing secret from Stripe Dashboard. See [Stripe webhook](#stripe-webhook) below. |
-| **`BASE_URL`** | Yes | — | Full public URL of your store. No trailing slash. e.g. `https://shop.yourdomain.com` or `http://192.168.1.100:8080` for local testing. |
+| **`BASE_URL`** | Yes | — | Full public URL of your store. No trailing slash. e.g. `https://shop.yourdomain.com` or `http://192.168.1.100:3000` for local testing. |
 | **`ADMIN_EMAIL`** | Yes | — | Email address for the admin login account (created on first start). |
 | **`ADMIN_PASSWORD`** | Yes | — | Password for the admin account. Use a strong password. |
 | `SITE_NAME` | No | `My Store` | Your store's display name — shown in the browser tab, admin panel, and emails. |
@@ -65,8 +65,8 @@ Copy `.env.example` to `.env` and set these values. Required variables are marke
 
 | Variable | Required | Default | What it does |
 |---|---|---|---|
-| `NGINX_PORT` | No | `8080` | **Host port** that Nginx binds to. This is the port you open in your browser or reverse proxy. Change it if 8080 is already in use. |
-| `PORT` | No | `3000` | Internal Node.js port inside the container. **Do not change this.** The app is not exposed directly — only Nginx is. |
+| `APP_PORT` | No | `3000` | **Host port** the app binds to. This is the port you point Nginx Proxy Manager at. Change it if 3000 is already in use on your host. |
+| `PORT` | No | `3000` | Internal Node.js port inside the container. **Do not change this.** Must match `APP_PORT`'s container side. |
 
 ### Paths (persistent data)
 
@@ -162,9 +162,9 @@ If you add the container through Unraid's Docker tab directly, configure it as f
 
 | Container port | Host port | Protocol |
 |---|---|---|
-| `3000` | *(leave unmapped — Nginx handles this)* | TCP |
+| `3000` | `3000` (or your preferred host port) | TCP |
 
-> Note: When using Method B, run the Nginx container separately using the `nginx:alpine` image with the `nginx/nginx.conf` from this repository mounted in, and with the same uploads volume.
+> Note: Point Nginx Proxy Manager at this host port. No separate Nginx container is needed.
 
 **Volume mappings** — add as a Path:
 
@@ -179,9 +179,8 @@ If you add the container through Unraid's Docker tab directly, configure it as f
 
 | Port | Where | What |
 |---|---|---|
-| `8080` (default, host) | Your host machine | HTTP access to the store via Nginx. Point your browser or reverse proxy here. Set with `NGINX_PORT`. |
-| `80` (internal) | Inside `store_nginx` container | Nginx listens here internally. |
-| `3000` (internal) | Inside `store_app` container | Node.js app. Not exposed to the host — only reachable by Nginx inside the Docker network. |
+| `3000` (default, host) | Your host machine | HTTP access to the store. Point Nginx Proxy Manager here. Set with `APP_PORT`. |
+| `3000` (internal) | Inside `store_app` container | Node.js app listening port. |
 
 ---
 
@@ -205,17 +204,17 @@ Paste the output as the value of `SESSION_SECRET` in your `.env`. The hex output
 
 ## SSL / HTTPS
 
-Nginx inside this stack listens on HTTP only. Use a reverse proxy on your host to terminate HTTPS.
+The app container listens on HTTP only. Use Nginx Proxy Manager to terminate HTTPS.
 
-**With Unraid Nginx Proxy Manager** (recommended):
+**With Nginx Proxy Manager** (recommended):
 
-1. Install **Nginx Proxy Manager** from the Unraid App Store.
+1. Install **Nginx Proxy Manager** from the Unraid App Store (or run it as a standalone container).
 2. Open it at `http://<unraid-ip>:81`.
 3. Add a **Proxy Host**:
    - Domain: `shop.yourdomain.com`
    - Scheme: `http`
    - Forward Hostname/IP: `<unraid-ip>` (or `localhost` if on the same machine)
-   - Forward Port: `8080` (your `NGINX_PORT`)
+   - Forward Port: `3000` (your `APP_PORT`)
    - Enable Websockets Support: on
 4. On the **SSL** tab: request a Let's Encrypt certificate.
 5. Update `BASE_URL` in `.env` to `https://shop.yourdomain.com`, then restart:
@@ -258,11 +257,9 @@ The entrypoint re-runs the seed scripts on every start — they skip records tha
 ```bash
 # View live logs
 docker compose logs -f app
-docker compose logs -f nginx
 
-# Restart a service
+# Restart the app
 docker compose restart app
-docker compose restart nginx
 
 # Stop everything
 docker compose down
@@ -305,10 +302,10 @@ Add (runs at 2:00 AM daily):
 |---|---|
 | Container exits immediately on start | `docker logs store_app` — likely a missing required `.env` variable |
 | App stuck starting / health check failing | `MONGODB_URI` wrong or MongoDB unreachable. Test: `docker exec store_app node -e "require('mongoose').connect(process.env.MONGODB_URI).then(()=>console.log('ok'))"` |
-| `502 Bad Gateway` from Nginx | App not healthy yet — wait 60s. Check `docker logs store_app` |
+| `502 Bad Gateway` from NPM | App not healthy yet — wait 60s. Check `docker logs store_app`. Verify NPM is pointing at the correct host port (`APP_PORT`). |
 | Stripe checkout not working | Verify `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, and `STRIPE_WEBHOOK_SECRET` are set correctly |
 | Stripe webhooks failing | Webhook URL must be your public `https://` domain. Verify `STRIPE_WEBHOOK_SECRET` matches the Stripe Dashboard signing secret |
-| Images not loading on storefront | Check `APPDATA_PATH/uploads` is writable and the Nginx volume mount is correct |
+| Images not loading on storefront | Check `APPDATA_PATH/uploads` is writable on the host |
 | Can't log into admin | Verify `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`. Re-seed: `docker compose exec app node src/scripts/seedAdmin.js` |
 | Session lost after restart | `SESSION_SECRET` must be a fixed value — not randomly generated on each start |
 | Changes to `.env` not taking effect | `docker compose up -d` (restarts affected containers) |

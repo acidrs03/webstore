@@ -8,8 +8,8 @@
 # The container automatically seeds the database and creates the admin account
 # on first start. Everything is ready once the health check passes (~60s).
 #
-# SSL:  Use Nginx Proxy Manager or Traefik to terminate HTTPS, forwarding to
-#       port 8080 on this host. Set BASE_URL to your https:// domain first.
+# SSL:  Handled by Nginx Proxy Manager — point it at host port APP_PORT (default 3000).
+#       Set BASE_URL to your https:// domain in .env first.
 #
 # MongoDB network: If your MongoDB container is on a named Docker network,
 #   uncomment the external network block at the bottom and add it to the
@@ -32,11 +32,11 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
+    ports:
+      - "${APP_PORT:-3000}:3000"
     volumes:
       - ${APPDATA_PATH:-/mnt/user/appdata/webstore}/uploads:/app/uploads
       - ${APPDATA_PATH:-/mnt/user/appdata/webstore}/logs:/app/logs
-    networks:
-      - store_net
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
       interval: 30s
@@ -44,28 +44,11 @@ services:
       retries: 5
       start_period: 60s
 
-  # ── Nginx reverse proxy ────────────────────────────────────────────────────
-  nginx:
-    image: nginx:alpine
-    container_name: store_nginx
-    restart: unless-stopped
-    ports:
-      - "${NGINX_PORT:-8080}:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ${APPDATA_PATH:-/mnt/user/appdata/webstore}/uploads:/app/uploads:ro
-    depends_on:
-      app:
-        condition: service_healthy
-    networks:
-      - store_net
-
-networks:
-  store_net:
-    driver: bridge
+networks: {}
   # ── External MongoDB network (uncomment if needed) ─────────────────────────
   # If your MongoDB container is on a named network (find with: docker network ls),
-  # uncomment the lines below and add the network name to the app service above.
+  # uncomment the lines below and add it to the app service's networks list.
   #
-  # your_mongo_network:
-  #   external: true
+  # networks:
+  #   your_mongo_network:
+  #     external: true
