@@ -67,6 +67,7 @@ Copy `.env.example` to `.env` and set these values. Required variables are marke
 |---|---|---|---|
 | `APP_PORT` | No | `5001` | **Host port** the app binds to. This is the port you point Nginx Proxy Manager at. Change it if 5001 is already in use on your host. |
 | `PORT` | No | `5001` | Internal Node.js port inside the container. **Do not change this.** Must match `APP_PORT`'s container side. |
+| `SECURE_COOKIE` | No | `false` | Set to `true` once SSL is active via Nginx Proxy Manager. Leave `false` for HTTP-only access — browsers block Secure cookies over HTTP, which breaks login. |
 
 ### Paths (persistent data)
 
@@ -302,6 +303,7 @@ Add (runs at 2:00 AM daily):
 |---|---|
 | Container exits immediately on start | `docker logs store_app` — likely a missing required `.env` variable |
 | App stuck starting / health check failing | `MONGODB_URI` wrong or MongoDB unreachable. Test: `docker exec store_app node -e "require('mongoose').connect(process.env.MONGODB_URI).then(()=>console.log('ok'))"` |
+| Login does nothing / silently fails | `SECURE_COOKIE=true` but you're on HTTP. Browsers drop Secure cookies over HTTP, breaking the session and CSRF check. Set `SECURE_COOKIE=false` until SSL is active. |
 | `502 Bad Gateway` from NPM | App not healthy yet — wait 60s. Check `docker logs store_app`. Verify NPM is pointing at the correct host port (`APP_PORT`). |
 | Stripe checkout not working | Verify `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, and `STRIPE_WEBHOOK_SECRET` are set correctly |
 | Stripe webhooks failing | Webhook URL must be your public `https://` domain. Verify `STRIPE_WEBHOOK_SECRET` matches the Stripe Dashboard signing secret |

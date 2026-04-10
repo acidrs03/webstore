@@ -12,7 +12,7 @@ const sessionConfig = {
     touchAfter: 24 * 3600,
   }),
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.SECURE_COOKIE === 'true',
     httpOnly: true,
     sameSite: 'lax',
     maxAge: 14 * 24 * 60 * 60 * 1000,
