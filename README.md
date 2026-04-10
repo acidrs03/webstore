@@ -24,7 +24,7 @@ Once the health check passes (~60 seconds on first start) the store is live.
 
 ```bash
 # 1. Download the config files
-curl -L https://github.com/YOURUSER/handcraft-store/archive/refs/heads/main.tar.gz | tar xz --strip=1
+curl -L https://github.com/acidrs03/webstore/archive/refs/heads/main.tar.gz | tar xz --strip=1
 
 # 2. Create your .env
 cp .env.example .env
