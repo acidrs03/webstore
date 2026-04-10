@@ -37,8 +37,8 @@ docker compose up -d
 docker compose ps  # store_app should show "Up (healthy)" after ~60s
 ```
 
-Then open `http://<your-server-ip>:3000` in a browser (or your `APP_PORT` if changed).
-Admin panel: `http://<your-server-ip>:3000/admin`
+Then open `http://<your-server-ip>:5001` in a browser (or your `APP_PORT` if changed).
+Admin panel: `http://<your-server-ip>:5001/admin`
 
 ---
 
@@ -55,7 +55,7 @@ Copy `.env.example` to `.env` and set these values. Required variables are marke
 | **`STRIPE_SECRET_KEY`** | Yes | — | Stripe secret key — `sk_live_...` for production, `sk_test_...` for testing. |
 | **`STRIPE_PUBLISHABLE_KEY`** | Yes | — | Stripe publishable key — `pk_live_...` or `pk_test_...`. |
 | **`STRIPE_WEBHOOK_SECRET`** | Yes | — | Signing secret from Stripe Dashboard. See [Stripe webhook](#stripe-webhook) below. |
-| **`BASE_URL`** | Yes | — | Full public URL of your store. No trailing slash. e.g. `https://shop.yourdomain.com` or `http://192.168.1.100:3000` for local testing. |
+| **`BASE_URL`** | Yes | — | Full public URL of your store. No trailing slash. e.g. `https://shop.yourdomain.com` or `http://192.168.1.100:5001` for local testing. |
 | **`ADMIN_EMAIL`** | Yes | — | Email address for the admin login account (created on first start). |
 | **`ADMIN_PASSWORD`** | Yes | — | Password for the admin account. Use a strong password. |
 | `SITE_NAME` | No | `My Store` | Your store's display name — shown in the browser tab, admin panel, and emails. |
@@ -65,8 +65,8 @@ Copy `.env.example` to `.env` and set these values. Required variables are marke
 
 | Variable | Required | Default | What it does |
 |---|---|---|---|
-| `APP_PORT` | No | `3000` | **Host port** the app binds to. This is the port you point Nginx Proxy Manager at. Change it if 3000 is already in use on your host. |
-| `PORT` | No | `3000` | Internal Node.js port inside the container. **Do not change this.** Must match `APP_PORT`'s container side. |
+| `APP_PORT` | No | `5001` | **Host port** the app binds to. This is the port you point Nginx Proxy Manager at. Change it if 5001 is already in use on your host. |
+| `PORT` | No | `5001` | Internal Node.js port inside the container. **Do not change this.** Must match `APP_PORT`'s container side. |
 
 ### Paths (persistent data)
 
@@ -162,7 +162,7 @@ If you add the container through Unraid's Docker tab directly, configure it as f
 
 | Container port | Host port | Protocol |
 |---|---|---|
-| `3000` | `3000` (or your preferred host port) | TCP |
+| `5001` | `5001` (or your preferred host port) | TCP |
 
 > Note: Point Nginx Proxy Manager at this host port. No separate Nginx container is needed.
 
@@ -179,8 +179,8 @@ If you add the container through Unraid's Docker tab directly, configure it as f
 
 | Port | Where | What |
 |---|---|---|
-| `3000` (default, host) | Your host machine | HTTP access to the store. Point Nginx Proxy Manager here. Set with `APP_PORT`. |
-| `3000` (internal) | Inside `store_app` container | Node.js app listening port. |
+| `5001` (default, host) | Your host machine | HTTP access to the store. Point Nginx Proxy Manager here. Set with `APP_PORT`. |
+| `5001` (internal) | Inside `store_app` container | Node.js app listening port. |
 
 ---
 
@@ -214,7 +214,7 @@ The app container listens on HTTP only. Use Nginx Proxy Manager to terminate HTT
    - Domain: `shop.yourdomain.com`
    - Scheme: `http`
    - Forward Hostname/IP: `<unraid-ip>` (or `localhost` if on the same machine)
-   - Forward Port: `3000` (your `APP_PORT`)
+   - Forward Port: `5001` (your `APP_PORT`)
    - Enable Websockets Support: on
 4. On the **SSL** tab: request a Let's Encrypt certificate.
 5. Update `BASE_URL` in `.env` to `https://shop.yourdomain.com`, then restart:

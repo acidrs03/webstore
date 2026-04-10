@@ -28,7 +28,7 @@ async function seedAdmin() {
   console.log('  Password: ' + password);
   console.log('');
   console.log('  → Change this password immediately after first login!');
-  console.log('  → Admin login URL: http://localhost:3000/admin/login');
+  console.log('  → Admin login URL: http://localhost:5001/admin/login');
   console.log('');
 
   await mongoose.disconnect();

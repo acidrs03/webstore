@@ -8,7 +8,7 @@
 # The container automatically seeds the database and creates the admin account
 # on first start. Everything is ready once the health check passes (~60s).
 #
-# SSL:  Handled by Nginx Proxy Manager — point it at host port APP_PORT (default 3000).
+# SSL:  Handled by Nginx Proxy Manager — point it at host port APP_PORT (default 5001).
 #       Set BASE_URL to your https:// domain in .env first.
 #
 # MongoDB network: If your MongoDB container is on a named Docker network,
@@ -33,12 +33,12 @@ services:
     environment:
       NODE_ENV: production
     ports:
-      - "${APP_PORT:-3000}:3000"
+      - "${APP_PORT:-5001}:5001"
     volumes:
       - ${APPDATA_PATH:-/mnt/user/appdata/webstore}/uploads:/app/uploads
       - ${APPDATA_PATH:-/mnt/user/appdata/webstore}/logs:/app/logs
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:5001/health"]
       interval: 30s
       timeout: 10s
       retries: 5

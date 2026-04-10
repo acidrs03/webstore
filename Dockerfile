@@ -41,11 +41,11 @@ RUN sed -i 's/\r$//' /app/entrypoint.sh && \
 
 USER nodeuser
 
-EXPOSE 3000
+EXPOSE 5001
 
 # Health check — passes once the app is connected to MongoDB
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
-  CMD wget -qO- http://localhost:3000/health || exit 1
+  CMD wget -qO- http://localhost:5001/health || exit 1
 
 # Entrypoint seeds data and starts the server automatically
 ENTRYPOINT ["/app/entrypoint.sh"]
