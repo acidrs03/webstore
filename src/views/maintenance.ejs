@@ -48,7 +48,12 @@
   </style>
 </head>
 <body>
-  <div class="maintenance-icon">✦</div>
+  <% if (typeof logo !== 'undefined' && logo) { %>
+    <img src="<%= logo %>" alt="<%= typeof siteName !== 'undefined' ? siteName : '' %>"
+      style="max-height:80px;max-width:240px;object-fit:contain;margin-bottom:1.5rem;">
+  <% } else { %>
+    <div class="maintenance-icon">✦</div>
+  <% } %>
   <h1 class="maintenance-heading"><%= heading %></h1>
   <p class="maintenance-message"><%= message %></p>
   <p class="maintenance-brand"><%= typeof siteName !== 'undefined' ? siteName : '' %></p>

@@ -33,6 +33,7 @@ RUN sed -i 's/\r$//' /app/entrypoint.sh && \
       uploads/categories \
       uploads/hero \
       uploads/requests \
+      uploads/maintenance \
       logs && \
     addgroup -g 1001 -S nodejs && \
     adduser  -S nodeuser -u 1001 -G nodejs && \

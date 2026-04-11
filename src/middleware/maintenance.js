@@ -19,11 +19,13 @@ async function maintenanceMode(req, res, next) {
 
     const heading = await settingService.getSetting('maintenanceHeading') || 'Under Maintenance';
     const message = await settingService.getSetting('maintenanceMessage') || 'We\'ll be back soon.';
+    const logo    = await settingService.getSetting('maintenanceLogo') || '';
 
     return res.status(503).render('maintenance', {
       title: heading,
       heading,
       message,
+      logo,
     });
   } catch (_) {
     next();

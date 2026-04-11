@@ -183,6 +183,7 @@ async function seedData() {
     { key: 'maintenanceEnabled', value: 'false', group: 'maintenance', label: 'Maintenance Mode', inputType: 'checkbox' },
     { key: 'maintenanceHeading', value: 'Under Maintenance', group: 'maintenance', label: 'Maintenance Heading', inputType: 'text' },
     { key: 'maintenanceMessage', value: "We'll be back soon.", group: 'maintenance', label: 'Maintenance Message', inputType: 'text' },
+    { key: 'maintenanceLogo', value: '', group: 'maintenance', label: 'Maintenance Logo', inputType: 'file' },
     { key: 'freeShippingEnabled', value: 'false', group: 'shipping', label: 'Enable Free Shipping', inputType: 'checkbox' },
     { key: 'freeShippingThreshold', value: '75', group: 'shipping', label: 'Free Shipping Minimum ($)', inputType: 'number' },
   ];

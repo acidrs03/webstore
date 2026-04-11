@@ -37,6 +37,15 @@ exports.update = async (req, res, next) => {
       body.maintenanceEnabled = 'true';
     }
 
+    // Handle logo upload / removal — never passed as a plain form field
+    delete body.maintenanceLogo;
+    if (req.file) {
+      body.maintenanceLogo = '/uploads/maintenance/' + req.file.filename;
+    } else if (body.removeLogo === 'true') {
+      body.maintenanceLogo = '';
+    }
+    delete body.removeLogo;
+
     await settingService.bulkUpdate(body);
     req.flash('success', 'Settings saved.');
     res.redirect('/admin/settings');
