@@ -19,6 +19,16 @@ echo "  Web Store — Starting up"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
+# Ensure all upload subdirectories exist in the mounted volume.
+# The Dockerfile pre-creates these in the image layer, but the volume mount
+# hides that layer — so we recreate them here at runtime.
+mkdir -p /app/uploads/products \
+         /app/uploads/categories \
+         /app/uploads/hero \
+         /app/uploads/requests \
+         /app/uploads/maintenance \
+         /app/logs
+
 echo "▶ Seeding default data..."
 node src/scripts/seedData.js
 echo ""
