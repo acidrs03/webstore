@@ -28,19 +28,7 @@ COPY entrypoint.sh /app/entrypoint.sh
 # sed strips Windows CRLF line endings from entrypoint.sh so the image builds
 # correctly whether the source files were copied on Windows or Linux.
 RUN sed -i 's/\r$//' /app/entrypoint.sh && \
-    mkdir -p \
-      uploads/products \
-      uploads/categories \
-      uploads/hero \
-      uploads/requests \
-      uploads/maintenance \
-      logs && \
-    addgroup -g 1001 -S nodejs && \
-    adduser  -S nodeuser -u 1001 -G nodejs && \
-    chown -R nodeuser:nodejs /app && \
     chmod +x /app/entrypoint.sh
-
-USER nodeuser
 
 EXPOSE 5001
 
