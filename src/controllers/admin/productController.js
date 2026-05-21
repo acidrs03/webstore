@@ -67,6 +67,17 @@ exports.create = async (req, res, next) => {
     data.trackInventory = data.trackInventory === 'on';
     data.madeToOrder = data.madeToOrder === 'on';
     data.allowsCustomization = data.allowsCustomization === 'on';
+    data.requiresDeposit = data.requiresDeposit === 'on';
+    // Deposit amount — cents if fixed, raw number if percentage
+    if (data.requiresDeposit) {
+      data.depositType = data.depositType || 'fixed';
+      data.depositAmount = data.depositType === 'percentage'
+        ? Math.max(0, Math.min(100, parseFloat(data.depositAmount || 0)))
+        : Math.round(parseFloat(data.depositAmount || 0) * 100);
+    } else {
+      data.depositType = 'fixed';
+      data.depositAmount = 0;
+    }
     // Empty categoryId → null
     if (!data.categoryId) data.categoryId = null;
     // Tags
@@ -123,6 +134,16 @@ exports.update = async (req, res, next) => {
     data.trackInventory = data.trackInventory === 'on';
     data.madeToOrder = data.madeToOrder === 'on';
     data.allowsCustomization = data.allowsCustomization === 'on';
+    data.requiresDeposit = data.requiresDeposit === 'on';
+    if (data.requiresDeposit) {
+      data.depositType = data.depositType || 'fixed';
+      data.depositAmount = data.depositType === 'percentage'
+        ? Math.max(0, Math.min(100, parseFloat(data.depositAmount || 0)))
+        : Math.round(parseFloat(data.depositAmount || 0) * 100);
+    } else {
+      data.depositType = 'fixed';
+      data.depositAmount = 0;
+    }
     // Empty categoryId → null
     if (!data.categoryId) data.categoryId = null;
     if (data.tags && typeof data.tags === 'string') {

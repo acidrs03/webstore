@@ -57,3 +57,18 @@ exports.updateNotes = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.updateDeposit = async (req, res, next) => {
+  try {
+    const { depositStatus, finalAmount } = req.body;
+    const update = { depositStatus };
+    if (finalAmount !== undefined && finalAmount !== '') {
+      update.finalAmount = Math.round(parseFloat(finalAmount) * 100);
+    }
+    await orderService.updateDepositStatus(req.params.id, update);
+    req.flash('success', 'Deposit status updated.');
+    res.redirect(`/admin/orders/${req.params.id}`);
+  } catch (err) {
+    next(err);
+  }
+};

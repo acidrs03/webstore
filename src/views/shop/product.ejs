@@ -3,7 +3,8 @@
 <head><%- include('../partials/head') %>
 <%
   // JSON-LD: Product structured data for Google rich results
-  const _baseUrl  = typeof baseUrl !== 'undefined' ? baseUrl : '';
+  const _baseUrl   = typeof baseUrl !== 'undefined' ? baseUrl : '';
+  const _siteName  = typeof siteName !== 'undefined' ? siteName : 'My Store';
   const _price    = (product.price / 100).toFixed(2);
   const _cmpPrice = product.compareAtPrice > 0 ? (product.compareAtPrice / 100).toFixed(2) : null;
   const _inStock  = !product.trackInventory || product.madeToOrder || product.inventoryQuantity > 0;
@@ -95,6 +96,20 @@
 
       <% if (product.shortDescription) { %>
         <p class="text-muted mb-3"><%= product.shortDescription %></p>
+      <% } %>
+
+      <% if (product.requiresDeposit) { %>
+      <%
+        const _depositAmt = product.depositType === 'percentage'
+          ? Math.ceil(product.price * product.depositAmount / 100)
+          : product.depositAmount;
+      %>
+      <div class="alert alert-info small mb-3">
+        <strong>Deposit required:</strong> A deposit of
+        <strong>$<%= (_depositAmt / 100).toFixed(2) %></strong>
+        <% if (product.depositType === 'percentage') { %>(<%=  product.depositAmount %>%)<% } %>
+        is charged at checkout. The remaining balance is due upon completion. We'll reach out to confirm details.
+      </div>
       <% } %>
 
       <!-- Badges -->

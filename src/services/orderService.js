@@ -108,6 +108,26 @@ async function createOrderFromStripeSession(session, lineItems) {
   const total = session.amount_total || 0;
   const subtotal = total - shippingAmount;
 
+  const orderType = metadata.orderType === 'deposit' ? 'deposit' : 'standard';
+
+  // For deposit orders map cart items to order item shape with fullPrice and isDeposit
+  const orderItems = cartItems.map((item) => ({
+    productId: item.productId || undefined,
+    title: item.title || '',
+    slug: item.slug || '',
+    sku: item.sku || '',
+    price: item.requiresDeposit ? (item.depositChargeAmount || 0) : (item.price || 0),
+    fullPrice: item.price || 0,
+    quantity: item.quantity || 1,
+    customizationText: item.customizationText || '',
+    image: item.image || '',
+    isDeposit: !!item.requiresDeposit,
+  }));
+
+  const depositAmount = orderType === 'deposit'
+    ? orderItems.reduce((sum, i) => sum + (i.isDeposit ? i.price * i.quantity : 0), 0)
+    : 0;
+
   const order = await Order.create({
     orderNumber,
     stripeCheckoutSessionId: session.id,
@@ -125,13 +145,16 @@ async function createOrderFromStripeSession(session, lineItems) {
       zip: address.postal_code || '',
       country: address.country || 'US',
     },
-    items: cartItems,
+    items: orderItems,
     subtotal,
     shippingAmount,
     taxAmount: session.total_details?.amount_tax || 0,
     total,
     paymentStatus: 'paid',
     fulfillmentStatus: 'unfulfilled',
+    orderType,
+    depositAmount,
+    ...(orderType === 'deposit' && { depositStatus: 'deposit_paid' }),
   });
 
   return order;
@@ -147,6 +170,23 @@ async function updateFulfillmentStatus(id, status, trackingNumber) {
 
   const order = await Order.findByIdAndUpdate(id, update, { new: true }).lean();
   return order;
+}
+
+/**
+ * Update deposit workflow fields on a deposit order.
+ * status must be one of: in_progress, invoiced, complete, cancelled
+ * finalAmount (cents) is required when status is 'invoiced' or 'complete'.
+ */
+async function updateDepositStatus(id, { depositStatus, finalAmount }) {
+  const update = { depositStatus };
+  if (finalAmount !== undefined) {
+    update.finalAmount = finalAmount;
+    const order = await Order.findById(id).lean();
+    if (order) {
+      update.balanceDue = Math.max(0, finalAmount - (order.depositAmount || 0));
+    }
+  }
+  return Order.findByIdAndUpdate(id, update, { new: true }).lean();
 }
 
 /**
@@ -198,6 +238,7 @@ module.exports = {
   getOrderByStripeSessionId,
   createOrderFromStripeSession,
   updateFulfillmentStatus,
+  updateDepositStatus,
   updateAdminNotes,
   getDashboardStats,
 };

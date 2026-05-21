@@ -104,6 +104,19 @@ const productSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    requiresDeposit: {
+      type: Boolean,
+      default: false,
+    },
+    depositType: {
+      type: String,
+      enum: ['fixed', 'percentage'],
+      default: 'fixed',
+    },
+    depositAmount: {
+      type: Number,
+      default: 0, // cents if fixed; 0-100 if percentage
+    },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -118,6 +131,15 @@ productSchema.virtual('isOnSale').get(function () {
 // Virtual: price formatted as a dollar string
 productSchema.virtual('formattedPrice').get(function () {
   return (this.price / 100).toFixed(2);
+});
+
+// Virtual: deposit amount that will actually be charged in cents
+productSchema.virtual('depositChargeAmount').get(function () {
+  if (!this.requiresDeposit) return 0;
+  if (this.depositType === 'percentage') {
+    return Math.ceil(this.price * this.depositAmount / 100);
+  }
+  return this.depositAmount;
 });
 
 module.exports = mongoose.model('Product', productSchema);

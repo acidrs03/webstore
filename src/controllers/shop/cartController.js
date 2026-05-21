@@ -28,14 +28,23 @@ exports.add = async (req, res, next) => {
       return res.redirect('back');
     }
 
+    const depositChargeAmount = product.requiresDeposit
+      ? (product.depositType === 'percentage'
+          ? Math.ceil(product.price * product.depositAmount / 100)
+          : product.depositAmount)
+      : 0;
+
     cartService.addItem(req.session, {
       productId: product._id.toString(),
       title: product.title,
       slug: product.slug,
+      sku: product.sku || '',
       price: product.price,
       image: product.images && product.images[0] ? product.images[0] : '',
       quantity: qty,
       customizationText: customizationText || '',
+      requiresDeposit: !!product.requiresDeposit,
+      depositChargeAmount,
     });
 
     req.flash('success', `"${product.title}" added to cart.`);

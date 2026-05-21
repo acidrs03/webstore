@@ -8,34 +8,15 @@ const orderItemSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
     },
-    title: {
-      type: String,
-      default: '',
-    },
-    slug: {
-      type: String,
-      default: '',
-    },
-    sku: {
-      type: String,
-      default: '',
-    },
-    price: {
-      type: Number,
-      default: 0,
-    }, // cents
-    quantity: {
-      type: Number,
-      default: 1,
-    },
-    customizationText: {
-      type: String,
-      default: '',
-    },
-    image: {
-      type: String,
-      default: '',
-    }, // first image of the product at time of order
+    title: { type: String, default: '' },
+    slug:  { type: String, default: '' },
+    sku:   { type: String, default: '' },
+    price: { type: Number, default: 0 }, // cents — deposit amount for deposit items, full price otherwise
+    fullPrice: { type: Number, default: 0 }, // cents — full product price (populated for deposit items)
+    quantity: { type: Number, default: 1 },
+    customizationText: { type: String, default: '' },
+    image: { type: String, default: '' },
+    isDeposit: { type: Boolean, default: false },
   },
   { _id: false }
 );
@@ -98,14 +79,31 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
-    stripeCheckoutSessionId: {
+    stripeCheckoutSessionId: { type: String },
+    stripePaymentIntentId:   { type: String },
+    trackingNumber:          { type: String },
+
+    // ── Deposit order fields ────────────────────────────────────────────────
+    orderType: {
       type: String,
+      enum: ['standard', 'deposit'],
+      default: 'standard',
     },
-    stripePaymentIntentId: {
-      type: String,
+    depositAmount: {
+      type: Number,
+      default: 0, // total deposit charged on items in cents (excludes shipping/tax)
     },
-    trackingNumber: {
+    depositStatus: {
       type: String,
+      enum: ['deposit_paid', 'in_progress', 'invoiced', 'complete', 'cancelled'],
+    },
+    finalAmount: {
+      type: Number,
+      default: 0, // final agreed total in cents — set by admin
+    },
+    balanceDue: {
+      type: Number,
+      default: 0, // finalAmount - depositAmount — computed by admin action
     },
   },
   { timestamps: true }
@@ -114,5 +112,7 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ fulfillmentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
+orderSchema.index({ orderType: 1 });
+orderSchema.index({ depositStatus: 1 });
 
 module.exports = mongoose.model('Order', orderSchema);

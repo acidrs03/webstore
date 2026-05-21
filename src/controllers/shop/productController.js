@@ -44,6 +44,7 @@ exports.show = async (req, res, next) => {
       ogType: 'product',
       product,
       relatedProducts,
+      siteName: res.locals.siteName || process.env.SITE_NAME || 'My Store',
     });
   } catch (err) {
     next(err);

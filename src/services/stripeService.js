@@ -17,13 +17,16 @@ const { getStripe } = require('../config/stripe');
 async function createCheckoutSession({ cart, customer, successUrl, cancelUrl, orderId, shippingOptions }) {
   const stripe = getStripe();
 
+  const isDepositOrder = cart.items.some((i) => i.requiresDeposit);
+
   // Map cart items to Stripe line_items
   const lineItems = cart.items.map((item) => {
-    const productData = {
-      name: item.customizationText
-        ? `${item.title} — ${item.customizationText}`
-        : item.title,
-    };
+    let name = item.customizationText
+      ? `${item.title} — ${item.customizationText}`
+      : item.title;
+    if (item.requiresDeposit) name += ' (Deposit)';
+
+    const productData = { name };
 
     // Include product image if available
     if (item.image) {
@@ -33,10 +36,14 @@ async function createCheckoutSession({ cart, customer, successUrl, cancelUrl, or
       }
     }
 
+    const unitAmount = item.requiresDeposit
+      ? (item.depositChargeAmount || 0)
+      : item.price;
+
     return {
       price_data: {
         currency: 'usd',
-        unit_amount: item.price, // already in cents
+        unit_amount: unitAmount, // cents
         product_data: productData,
       },
       quantity: item.quantity,
@@ -68,6 +75,7 @@ async function createCheckoutSession({ cart, customer, successUrl, cancelUrl, or
       customerName: customer.name || '',
       customerPhone: customer.phone || '',
       orderId: orderId ? String(orderId) : '',
+      orderType: isDepositOrder ? 'deposit' : 'standard',
     },
 
     success_url: successUrl,

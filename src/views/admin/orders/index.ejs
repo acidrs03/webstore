@@ -69,7 +69,12 @@
                     <div class="text-muted small"><%= order.customer.email %></div>
                   </td>
                   <td class="text-muted small"><%= order.items ? order.items.length : 0 %> item(s)</td>
-                  <td class="fw-semibold">$<%= (order.total / 100).toFixed(2) %></td>
+                  <td class="fw-semibold">
+                    $<%= (order.total / 100).toFixed(2) %>
+                    <% if (order.orderType === 'deposit') { %>
+                    <span class="badge bg-info text-dark ms-1" title="Deposit order">Deposit</span>
+                    <% } %>
+                  </td>
                   <td>
                     <span class="badge <%= order.paymentStatus === 'paid' ? 'bg-success' : order.paymentStatus === 'pending' ? 'bg-warning text-dark' : 'bg-danger' %>">
                       <%= order.paymentStatus %>
@@ -77,6 +82,9 @@
                   </td>
                   <td>
                     <span class="badge bg-secondary"><%= order.fulfillmentStatus %></span>
+                    <% if (order.orderType === 'deposit' && order.depositStatus) { %>
+                    <span class="badge bg-info text-dark"><%= order.depositStatus.replace('_', ' ') %></span>
+                    <% } %>
                   </td>
                   <td class="text-muted small"><%= order.createdAt.toLocaleDateString() %></td>
                   <td>

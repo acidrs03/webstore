@@ -12,5 +12,6 @@ router.get('/', orderController.index);
 router.get('/:id', orderController.show);
 router.post('/:id/fulfillment', verifyCsrf, orderController.updateFulfillment);
 router.post('/:id/notes', verifyCsrf, orderController.updateNotes);
+router.post('/:id/deposit', verifyCsrf, orderController.updateDeposit);
 
 module.exports = router;

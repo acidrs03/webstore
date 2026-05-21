@@ -6,9 +6,15 @@
 
 <div class="container py-5 text-center">
   <div class="mx-auto" style="max-width:560px">
+    <% const isDeposit = order && order.orderType === 'deposit'; %>
     <div class="display-1 text-success mb-3">✓</div>
-    <h1 class="h2 mb-3">Order Confirmed!</h1>
+    <h1 class="h2 mb-3"><%= isDeposit ? 'Deposit Received!' : 'Order Confirmed!' %></h1>
+    <% if (isDeposit) { %>
+    <p class="lead text-muted mb-2">Thank you! Your deposit has been received and your order is now in progress.</p>
+    <p class="text-muted mb-4">We'll be in touch shortly to confirm details and discuss next steps. The remaining balance will be due upon completion.</p>
+    <% } else { %>
     <p class="lead text-muted mb-4">Thank you for your purchase! You'll receive a confirmation email shortly.</p>
+    <% } %>
 
     <% if (order) { %>
     <div class="card border-0 shadow-sm mb-4 text-start">
@@ -20,7 +26,10 @@
         <div class="mb-3">
           <% order.items.forEach(function(item) { %>
           <div class="d-flex justify-content-between py-1 border-bottom small">
-            <span><%= item.title %> × <%= item.quantity %></span>
+            <span>
+              <%= item.title %> × <%= item.quantity %>
+              <% if (item.isDeposit) { %><span class="badge bg-info text-dark ms-1">Deposit</span><% } %>
+            </span>
             <span>$<%= ((item.price * item.quantity) / 100).toFixed(2) %></span>
           </div>
           <% }); %>
@@ -28,9 +37,15 @@
         <% } %>
 
         <div class="d-flex justify-content-between fw-semibold">
-          <span>Total</span>
+          <span><%= isDeposit ? 'Deposit paid today' : 'Total' %></span>
           <span>$<%= (order.total / 100).toFixed(2) %></span>
         </div>
+        <% if (isDeposit) { %>
+        <div class="d-flex justify-content-between text-muted small mt-1">
+          <span>Balance due (set on final invoice)</span>
+          <span>TBD</span>
+        </div>
+        <% } %>
       </div>
     </div>
     <% } %>

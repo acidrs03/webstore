@@ -33,7 +33,10 @@ function getCart(session) {
  * Add an item to the cart.
  * If an item with the same productId AND customizationText already exists, increment quantity.
  */
-function addItem(session, { productId, title, slug, price, image, quantity = 1, customizationText = '' }) {
+function addItem(session, {
+  productId, title, slug, price, image, quantity = 1, customizationText = '', sku = '',
+  requiresDeposit = false, depositChargeAmount = 0,
+}) {
   initCart(session);
 
   const items = session.cart.items;
@@ -50,10 +53,13 @@ function addItem(session, { productId, title, slug, price, image, quantity = 1, 
       productId: String(productId),
       title,
       slug,
-      price,       // stored in cents
+      sku: sku || '',
+      price,                // full product price in cents (always)
       image: image || '',
       quantity,
       customizationText: customizationText || '',
+      requiresDeposit,
+      depositChargeAmount,  // deposit amount per unit in cents (0 for non-deposit items)
     });
   }
 
@@ -111,11 +117,13 @@ function clearCart(session) {
 
 /**
  * Recalculate and persist the cart subtotal in cents.
+ * For deposit items the subtotal reflects the deposit charge, not the full price.
  */
 function recalculate(session) {
   initCart(session);
   session.cart.subtotal = session.cart.items.reduce((sum, item) => {
-    return sum + (item.price || 0) * (item.quantity || 0);
+    const perUnit = item.requiresDeposit ? (item.depositChargeAmount || 0) : (item.price || 0);
+    return sum + perUnit * (item.quantity || 0);
   }, 0);
   return session.cart.subtotal;
 }
@@ -136,7 +144,9 @@ async function validateCartPrices(session) {
   for (let i = items.length - 1; i >= 0; i--) {
     const item = items[i];
     // eslint-disable-next-line no-await-in-loop
-    const product = await Product.findById(item.productId).select('price isActive isArchived title').lean();
+    const product = await Product.findById(item.productId)
+      .select('price isActive isArchived title requiresDeposit depositType depositAmount')
+      .lean();
 
     if (!product || !product.isActive || product.isArchived) {
       removedItems.push(item.title || item.productId);
@@ -148,6 +158,21 @@ async function validateCartPrices(session) {
     if (product.price !== item.price) {
       item.price = product.price;
       updated = true;
+    }
+
+    // Re-validate deposit amount if applicable
+    if (product.requiresDeposit) {
+      const freshDeposit = product.depositType === 'percentage'
+        ? Math.ceil(product.price * product.depositAmount / 100)
+        : product.depositAmount;
+      if (item.depositChargeAmount !== freshDeposit) {
+        item.depositChargeAmount = freshDeposit;
+        updated = true;
+      }
+      item.requiresDeposit = true;
+    } else {
+      item.requiresDeposit = false;
+      item.depositChargeAmount = 0;
     }
   }
 

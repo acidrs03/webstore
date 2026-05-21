@@ -241,6 +241,41 @@
               </div>
             </div>
 
+            <!-- Deposit -->
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-white py-3">
+                <h6 class="mb-0 fw-semibold">Deposit</h6>
+              </div>
+              <div class="card-body">
+                <div class="form-check form-switch mb-3">
+                  <input class="form-check-input" type="checkbox" id="requiresDeposit" name="requiresDeposit" value="on" <%= product.requiresDeposit ? 'checked' : '' %>>
+                  <label class="form-check-label" for="requiresDeposit">Require a deposit at checkout</label>
+                </div>
+                <div id="depositFields" class="<%= product.requiresDeposit ? '' : 'd-none' %>">
+                  <div class="mb-3">
+                    <label for="depositType" class="form-label">Deposit Type</label>
+                    <select class="form-select" id="depositType" name="depositType">
+                      <option value="fixed" <%= (!product.depositType || product.depositType === 'fixed') ? 'selected' : '' %>>Fixed amount ($)</option>
+                      <option value="percentage" <%= product.depositType === 'percentage' ? 'selected' : '' %>>Percentage of price (%)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="depositAmount" class="form-label" id="depositAmountLabel">
+                      <%= product.depositType === 'percentage' ? 'Deposit Percentage' : 'Deposit Amount' %>
+                    </label>
+                    <div class="input-group">
+                      <span class="input-group-text" id="depositPrefix"><%= product.depositType === 'percentage' ? '%' : '$' %></span>
+                      <input type="number" class="form-control" id="depositAmount" name="depositAmount"
+                        value="<%= product.requiresDeposit ? (product.depositType === 'percentage' ? product.depositAmount : (product.depositAmount / 100).toFixed(2)) : '' %>"
+                        step="<%= product.depositType === 'percentage' ? '1' : '0.01' %>" min="0"
+                        <%= product.depositType === 'percentage' ? 'max="100"' : '' %>>
+                    </div>
+                    <div class="form-text">Customers pay this at checkout. Balance due is settled later.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Save Button -->
             <button type="submit" class="btn btn-dark w-100 btn-lg mb-2">
               <i class="bi bi-check2 me-1"></i> Save Product
@@ -316,5 +351,28 @@
 })();
 </script>
 <script src="/js/admin.js"></script>
+<script>
+(function () {
+  const depositToggle = document.getElementById('requiresDeposit');
+  const depositFields = document.getElementById('depositFields');
+  const depositType   = document.getElementById('depositType');
+  const depositPrefix = document.getElementById('depositPrefix');
+  const depositLabel  = document.getElementById('depositAmountLabel');
+  const depositInput  = document.getElementById('depositAmount');
+
+  depositToggle.addEventListener('change', function () {
+    depositFields.classList.toggle('d-none', !this.checked);
+  });
+
+  depositType.addEventListener('change', function () {
+    const isPct = this.value === 'percentage';
+    depositPrefix.textContent = isPct ? '%' : '$';
+    depositLabel.textContent  = isPct ? 'Deposit Percentage' : 'Deposit Amount';
+    depositInput.step = isPct ? '1' : '0.01';
+    depositInput.max  = isPct ? '100' : '';
+    depositInput.value = '';
+  });
+})();
+</script>
 </body>
 </html>
