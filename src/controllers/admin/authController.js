@@ -26,7 +26,13 @@ exports.login = async (req, res, next) => {
     admin.lastLoginAt = new Date();
     await admin.save();
 
-    req.session.adminUser = { id: admin._id, name: admin.name, email: admin.email };
+    req.session.adminUser = {
+      id: admin._id,
+      name: admin.name,
+      email: admin.email,
+      role: admin.role || 'admin',
+      permissions: admin.permissions || [],
+    };
     req.flash('success', `Welcome back, ${admin.name}!`);
     res.redirect('/admin');
   } catch (err) {

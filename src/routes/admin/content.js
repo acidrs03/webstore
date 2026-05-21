@@ -3,11 +3,12 @@
 const express = require('express');
 const router = express.Router();
 const contentController = require('../../controllers/admin/contentController');
-const { requireAdmin } = require('../../middleware/auth');
+const { requireAdmin, requirePermission } = require('../../middleware/auth');
 const { verifyCsrf } = require('../../middleware/csrf');
 const { heroImage } = require('../../middleware/upload');
 
 router.use(requireAdmin);
+router.use(requirePermission('content'));
 
 router.get('/', contentController.index);
 router.get('/:key/edit', contentController.edit);

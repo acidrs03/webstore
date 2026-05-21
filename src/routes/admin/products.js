@@ -3,12 +3,13 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../../controllers/admin/productController');
-const { requireAdmin } = require('../../middleware/auth');
+const { requireAdmin, requirePermission } = require('../../middleware/auth');
 const { verifyCsrf } = require('../../middleware/csrf');
 const { productImages } = require('../../middleware/upload');
 const { productValidation } = require('../../validators/productValidator');
 
 router.use(requireAdmin);
+router.use(requirePermission('products'));
 
 router.get('/', productController.index);
 router.get('/new', productController.new);

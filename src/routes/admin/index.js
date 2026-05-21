@@ -18,5 +18,6 @@ router.use('/settings', require('./settings'));
 router.use('/theme', require('./theme'));
 router.use('/custom-requests', require('./customRequests'));
 router.use('/shipping', require('./shipping'));
+router.use('/admins', require('./admins'));
 
 module.exports = router;

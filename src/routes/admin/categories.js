@@ -3,11 +3,12 @@
 const express = require('express');
 const router = express.Router();
 const categoryController = require('../../controllers/admin/categoryController');
-const { requireAdmin } = require('../../middleware/auth');
+const { requireAdmin, requirePermission } = require('../../middleware/auth');
 const { verifyCsrf } = require('../../middleware/csrf');
 const { categoryImage } = require('../../middleware/upload');
 
 router.use(requireAdmin);
+router.use(requirePermission('categories'));
 
 router.get('/', categoryController.index);
 router.get('/new', categoryController.new);

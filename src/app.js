@@ -115,6 +115,14 @@ app.use(async (req, res, next) => {
   // Admin user (set by auth middleware on protected routes)
   res.locals.adminUser = req.session.adminUser || null;
 
+  // Permission helper available in all admin views
+  res.locals.canDo = function (perm) {
+    const u = req.session.adminUser;
+    if (!u) return false;
+    if (u.role === 'superadmin') return true;
+    return Array.isArray(u.permissions) && u.permissions.includes(perm);
+  };
+
   // Current path for active nav highlighting
   res.locals.currentPath = req.path;
 

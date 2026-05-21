@@ -22,6 +22,16 @@ const adminSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    role: {
+      type: String,
+      enum: ['superadmin', 'admin'],
+      default: 'admin',
+    },
+    permissions: {
+      type: [String],
+      default: [],
+      // Valid values: products, categories, orders, customRequests, content, shipping, theme, settings
+    },
     isActive: {
       type: Boolean,
       default: true,

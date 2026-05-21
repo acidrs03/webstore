@@ -3,10 +3,11 @@
 const express = require('express');
 const router = express.Router();
 const shippingController = require('../../controllers/admin/shippingController');
-const { requireAdmin } = require('../../middleware/auth');
+const { requireAdmin, requirePermission } = require('../../middleware/auth');
 const { verifyCsrf } = require('../../middleware/csrf');
 
 router.use(requireAdmin);
+router.use(requirePermission('shipping'));
 
 router.get('/', shippingController.index);
 router.get('/new', shippingController.new);

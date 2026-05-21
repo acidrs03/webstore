@@ -19,7 +19,7 @@ async function seedAdmin() {
     return;
   }
 
-  const admin = new Admin({ email, password, name });
+  const admin = new Admin({ email, password, name, role: 'superadmin', permissions: [] });
   await admin.save();
 
   console.log('');
