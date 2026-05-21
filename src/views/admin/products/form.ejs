@@ -100,32 +100,36 @@
 
             <!-- Images -->
             <div class="card border-0 shadow-sm mb-4">
-              <div class="card-header bg-white py-3">
+              <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-semibold">Images</h6>
+                <span class="text-muted small">First image is the main product photo</span>
               </div>
               <div class="card-body">
+
                 <% if (!isNew && product.images && product.images.length > 0) { %>
-                <div class="mb-3">
-                  <label class="form-label small text-muted">Current Images</label>
-                  <div class="d-flex gap-2 flex-wrap">
-                    <% product.images.forEach(function(img) { %>
-                    <div class="position-relative">
-                      <img src="<%= img %>" class="rounded border" style="width:80px;height:80px;object-fit:cover;" alt="Product image">
-                      <label class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-end justify-content-center pb-1" style="cursor:pointer;background:rgba(0,0,0,0.3);border-radius:4px;opacity:0;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
-                        <input type="checkbox" name="removeImages" value="<%= img %>" class="form-check-input me-1" style="display:none">
-                        <span class="badge bg-danger small" onclick="this.previousElementSibling.checked=true;this.closest('.position-relative').style.opacity=0.3">Remove</span>
-                      </label>
+                <div id="imageGrid" class="d-flex gap-2 flex-wrap mb-2">
+                  <% product.images.forEach(function(img, i) { %>
+                  <div class="img-item position-relative" data-path="<%= img %>" style="width:120px;">
+                    <input type="hidden" name="existingImages" value="<%= img %>">
+                    <img src="<%= img %>" class="rounded border w-100" style="height:120px;object-fit:cover;display:block;" alt="Product image">
+                    <% if (i === 0) { %>
+                    <span class="img-main-badge position-absolute top-0 start-0 m-1 badge bg-dark" style="font-size:0.6rem;pointer-events:none;">Main</span>
+                    <% } %>
+                    <button type="button" class="btn-img-remove position-absolute top-0 end-0 m-1 btn btn-danger p-0 d-flex align-items-center justify-content-center" style="width:22px;height:22px;border-radius:50%;font-size:0.75rem;" title="Remove image">&times;</button>
+                    <div class="position-absolute bottom-0 start-0 end-0 text-center py-1" style="background:rgba(0,0,0,0.35);border-radius:0 0 4px 4px;cursor:grab;color:rgba(255,255,255,0.8);font-size:0.7rem;pointer-events:none;">
+                      <i class="bi bi-grip-horizontal"></i>
                     </div>
-                    <% }); %>
                   </div>
-                  <div class="form-text">Hover over an image and click Remove to delete it.</div>
+                  <% }); %>
                 </div>
+                <p class="form-text mb-3">Drag to reorder &mdash; remove with &times;</p>
                 <% } %>
-                <div>
-                  <label for="images" class="form-label">Upload Images</label>
-                  <input type="file" class="form-control" id="images" name="images" multiple accept="image/jpeg,image/png,image/webp">
-                  <div class="form-text">Select up to 8 images. JPEG, PNG, WebP. Max 10MB each. First image is used as the main product image.</div>
-                </div>
+
+                <label for="images" class="form-label">Upload Images</label>
+                <input type="file" class="form-control mb-2" id="images" name="images" multiple accept="image/jpeg,image/png,image/webp">
+                <p class="form-text mb-0">JPEG, PNG, WebP &mdash; max 10 MB each. New uploads are appended after existing images.</p>
+                <div id="newImagePreview" class="d-flex gap-2 flex-wrap mt-3"></div>
+
               </div>
             </div>
 
@@ -290,6 +294,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 (function () {
   const initialHtml = <%- JSON.stringify(product.description || '') %>;
@@ -372,6 +377,76 @@
     depositInput.max  = isPct ? '100' : '';
     depositInput.value = '';
   });
+})();
+</script>
+<script>
+(function () {
+  const grid    = document.getElementById('imageGrid');
+  const preview = document.getElementById('newImagePreview');
+  const fileIn  = document.getElementById('images');
+
+  // ── Sortable drag-to-reorder ────────────────────────────────────────────────
+  if (grid) {
+    Sortable.create(grid, {
+      animation: 150,
+      handle: '.img-item',
+      onEnd: refreshMainBadge,
+    });
+  }
+
+  function refreshMainBadge() {
+    if (!grid) return;
+    grid.querySelectorAll('.img-item').forEach(function (el, i) {
+      let badge = el.querySelector('.img-main-badge');
+      if (i === 0) {
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.className = 'img-main-badge position-absolute top-0 start-0 m-1 badge bg-dark';
+          badge.style.cssText = 'font-size:0.6rem;pointer-events:none;';
+          badge.textContent = 'Main';
+          el.appendChild(badge);
+        }
+      } else if (badge) {
+        badge.remove();
+      }
+    });
+  }
+
+  // ── Remove existing image ───────────────────────────────────────────────────
+  if (grid) {
+    grid.addEventListener('click', function (e) {
+      const btn = e.target.closest('.btn-img-remove');
+      if (!btn) return;
+      const item = btn.closest('.img-item');
+      // Switch hidden input from existingImages → removeImages so server deletes it
+      const hidden = item.querySelector('input[name="existingImages"]');
+      if (hidden) hidden.name = 'removeImages';
+      item.style.opacity = '0.25';
+      item.style.pointerEvents = 'none';
+      refreshMainBadge();
+    });
+  }
+
+  // ── Preview newly selected files ────────────────────────────────────────────
+  if (fileIn) {
+    fileIn.addEventListener('change', function () {
+      preview.innerHTML = '';
+      Array.from(this.files).forEach(function (file) {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const div = document.createElement('div');
+          div.className = 'position-relative';
+          div.style.width = '120px';
+          div.innerHTML =
+            '<img src="' + e.target.result + '" class="rounded border w-100" style="height:120px;object-fit:cover;display:block;" alt="New image">' +
+            '<span class="position-absolute bottom-0 start-0 end-0 text-center py-1" style="background:rgba(0,0,0,0.45);color:#fff;font-size:0.65rem;border-radius:0 0 4px 4px;">New</span>';
+          preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  }
 })();
 </script>
 </body>

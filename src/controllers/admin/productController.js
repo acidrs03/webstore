@@ -150,14 +150,18 @@ exports.update = async (req, res, next) => {
       data.tags = data.tags.split(',').map(t => t.trim()).filter(Boolean);
     }
 
-    // Handle image uploads — append new images to existing
-    const existing = await productService.getProductById(req.params.id);
-    let images = existing.images || [];
-    // Remove images flagged for removal
+    // Handle image order, removals, and new uploads
+    // existingImages submitted in the user-defined drag order
+    let images = data.existingImages
+      ? (Array.isArray(data.existingImages) ? data.existingImages : [data.existingImages])
+      : (await productService.getProductById(req.params.id)).images || [];
+    delete data.existingImages;
+
     if (data.removeImages) {
       const toRemove = Array.isArray(data.removeImages) ? data.removeImages : [data.removeImages];
       images = images.filter(img => !toRemove.includes(img));
       toRemove.forEach(img => mediaService.deleteFile(img));
+      delete data.removeImages;
     }
     if (req.files && req.files.length > 0) {
       const newPaths = mediaService.saveFiles(req.files);
