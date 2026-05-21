@@ -11,9 +11,9 @@ router.use(requireAdmin);
 
 router.get('/', categoryController.index);
 router.get('/new', categoryController.new);
-router.post('/', verifyCsrf, categoryImage, categoryController.create);
+router.post('/', categoryImage, verifyCsrf, categoryController.create);
 router.get('/:id/edit', categoryController.edit);
 router.post('/:id/delete', verifyCsrf, categoryController.destroy);
-router.post('/:id', verifyCsrf, categoryImage, categoryController.update);
+router.post('/:id', categoryImage, verifyCsrf, categoryController.update);
 
 module.exports = router;
