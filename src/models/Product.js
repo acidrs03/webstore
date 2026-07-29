@@ -117,6 +117,15 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0, // cents if fixed; 0-100 if percentage
     },
+    showPriceLabel: {
+      type: Boolean,
+      default: false,
+    },
+    priceLabelText: {
+      type: String,
+      trim: true,
+      default: '',
+    },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );

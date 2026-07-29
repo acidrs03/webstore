@@ -85,6 +85,9 @@
       <h1 class="product-title h2 mb-2"><%= product.title %></h1>
 
       <div class="product-price mb-3">
+        <% if (product.requiresDeposit && product.showPriceLabel && product.priceLabelText) { %>
+          <span class="text-muted d-block small mb-1"><%= product.priceLabelText %></span>
+        <% } %>
         <% if (product.compareAtPrice && product.compareAtPrice > product.price) { %>
           <span class="h4 text-danger fw-bold">$<%= (product.price / 100).toFixed(2) %></span>
           <span class="text-muted text-decoration-line-through ms-2">$<%= (product.compareAtPrice / 100).toFixed(2) %></span>
@@ -212,6 +215,9 @@
           </a>
           <div class="card-body">
             <h6 class="card-title small"><a href="/shop/<%= p.slug %>" class="text-dark text-decoration-none"><%= p.title %></a></h6>
+            <% if (p.requiresDeposit && p.showPriceLabel && p.priceLabelText) { %>
+              <span class="text-muted d-block" style="font-size: 0.7rem;"><%= p.priceLabelText %></span>
+            <% } %>
             <span class="fw-semibold small">$<%= (p.price / 100).toFixed(2) %></span>
           </div>
         </div>

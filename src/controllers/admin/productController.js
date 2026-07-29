@@ -78,6 +78,8 @@ exports.create = async (req, res, next) => {
       data.depositType = 'fixed';
       data.depositAmount = 0;
     }
+    data.showPriceLabel = data.requiresDeposit && data.showPriceLabel === 'on';
+    data.priceLabelText = data.showPriceLabel ? String(data.priceLabelText || '').trim() : '';
     // Empty categoryId → null
     if (!data.categoryId) data.categoryId = null;
     // Tags
@@ -144,6 +146,8 @@ exports.update = async (req, res, next) => {
       data.depositType = 'fixed';
       data.depositAmount = 0;
     }
+    data.showPriceLabel = data.requiresDeposit && data.showPriceLabel === 'on';
+    data.priceLabelText = data.showPriceLabel ? String(data.priceLabelText || '').trim() : '';
     // Empty categoryId → null
     if (!data.categoryId) data.categoryId = null;
     if (data.tags && typeof data.tags === 'string') {

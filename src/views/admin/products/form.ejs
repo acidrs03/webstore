@@ -276,6 +276,20 @@
                     </div>
                     <div class="form-text">Customers pay this at checkout. Balance due is settled later.</div>
                   </div>
+
+                  <hr class="my-3">
+
+                  <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="showPriceLabel" name="showPriceLabel" value="on" <%= product.showPriceLabel ? 'checked' : '' %>>
+                    <label class="form-check-label" for="showPriceLabel">Show a "starting from" style price label</label>
+                    <div class="form-text">Use this when the final price varies with the scope of work.</div>
+                  </div>
+                  <div id="priceLabelField" class="<%= product.showPriceLabel ? '' : 'd-none' %>">
+                    <label for="priceLabelText" class="form-label">Label Text</label>
+                    <input type="text" class="form-control" id="priceLabelText" name="priceLabelText"
+                      value="<%= product.priceLabelText || '' %>" placeholder="Starting from" maxlength="40">
+                    <div class="form-text">Shown before the price on the product card and details page, e.g. "Starting from $<%= (product.price / 100).toFixed(2) %>".</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -376,6 +390,13 @@
     depositInput.step = isPct ? '1' : '0.01';
     depositInput.max  = isPct ? '100' : '';
     depositInput.value = '';
+  });
+
+  const priceLabelToggle = document.getElementById('showPriceLabel');
+  const priceLabelField  = document.getElementById('priceLabelField');
+
+  priceLabelToggle.addEventListener('change', function () {
+    priceLabelField.classList.toggle('d-none', !this.checked);
   });
 })();
 </script>

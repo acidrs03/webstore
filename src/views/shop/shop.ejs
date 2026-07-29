@@ -84,6 +84,9 @@
               <% } %>
               <div class="mt-auto d-flex justify-content-between align-items-center">
                 <div>
+                  <% if (product.requiresDeposit && product.showPriceLabel && product.priceLabelText) { %>
+                    <span class="text-muted d-block" style="font-size: 0.7rem;"><%= product.priceLabelText %></span>
+                  <% } %>
                   <% if (product.compareAtPrice && product.compareAtPrice > product.price) { %>
                     <span class="text-danger fw-semibold">$<%= (product.price / 100).toFixed(2) %></span>
                     <span class="text-muted text-decoration-line-through small ms-1">$<%= (product.compareAtPrice / 100).toFixed(2) %></span>
